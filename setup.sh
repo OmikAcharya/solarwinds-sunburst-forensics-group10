@@ -30,32 +30,43 @@ chmod +x scripts/run_forensics.py
 chmod +x scripts/generate_bsa_cert.py
 echo -e "${GREEN}[+] Scripts marked executable.${NC}"
 
-# 2. Virtual Environment Setup
+# 2. Virtual Environment & Dependency Installation
 VENV_DIR=".venv"
-if [ ! -d "${VENV_DIR}" ]; then
-    echo -e "${CYAN}[*] Creating Python virtual environment in ${VENV_DIR}...${NC}"
-    python3 -m venv "${VENV_DIR}"
-    echo -e "${GREEN}[+] Virtual environment initialized.${NC}"
+
+if command -v uv >/dev/null 2>&1; then
+    echo -e "${CYAN}[*] Fast package manager 'uv' detected.${NC}"
+    if [ ! -d "${VENV_DIR}" ]; then
+        echo -e "${CYAN}[*] Creating virtual environment via uv in ${VENV_DIR}...${NC}"
+        uv venv "${VENV_DIR}"
+        echo -e "${GREEN}[+] Virtual environment initialized with uv.${NC}"
+    fi
+    # shellcheck source=/dev/null
+    source "${VENV_DIR}/bin/activate"
+    echo -e "${CYAN}[*] Installing dependencies with uv pip...${NC}"
+    uv pip install -r requirements.txt
+    echo -e "${GREEN}[+] Dependencies installed via uv.${NC}"
 else
-    echo -e "${YELLOW}[!] Existing virtual environment found at ${VENV_DIR}.${NC}"
+    if [ ! -d "${VENV_DIR}" ]; then
+        echo -e "${CYAN}[*] Creating Python virtual environment in ${VENV_DIR}...${NC}"
+        python3 -m venv "${VENV_DIR}"
+        echo -e "${GREEN}[+] Virtual environment initialized.${NC}"
+    else
+        echo -e "${YELLOW}[!] Existing virtual environment found at ${VENV_DIR}.${NC}"
+    fi
+    # shellcheck source=/dev/null
+    source "${VENV_DIR}/bin/activate"
+    echo -e "${CYAN}[*] Installing dependencies from requirements.txt...${NC}"
+    pip install --upgrade pip setuptools wheel
+    pip install -r requirements.txt
+    echo -e "${GREEN}[+] Dependencies installed successfully.${NC}"
 fi
 
-# Activate virtual environment
-# shellcheck source=/dev/null
-source "${VENV_DIR}/bin/activate"
-
-# 3. Upgrade pip and install dependencies
-echo -e "${CYAN}[*] Installing dependencies from requirements.txt...${NC}"
-pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
-echo -e "${GREEN}[+] Dependencies installed successfully.${NC}"
-
-# 4. Verify Cryptographic Integrity
+# 3. Verify Cryptographic Integrity
 echo ""
 echo -e "${CYAN}[*] Executing initial cryptographic baseline validation...${NC}"
 bash scripts/verify_hashes.sh
 
-# 5. Run Pytest Suite
+# 4. Run Pytest Suite
 echo ""
 echo -e "${CYAN}[*] Running forensic pipeline verification tests...${NC}"
 pytest tests/ -v
