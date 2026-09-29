@@ -35,6 +35,11 @@ jobs:
         run: |
           pytest tests/ -v --durations=10
 
+      - name: Run Forensic Triage & Behavioral Simulation Engine
+        run: |
+          python scripts/run_forensics.py --simulate --simulate-behavior victim --outdir outputs/
+          python scripts/run_forensics.py --check-process wireshark
+
       - name: Validate Statutory Legal & Forensic Deliverables
         run: |
           echo "Validating existence and non-emptiness of required forensic deliverables..."
@@ -46,11 +51,14 @@ jobs:
             "outputs/die_inspection.txt"
             "outputs/floss_decoded_strings.txt"
             "outputs/capa_capabilities_report.txt"
+            "outputs/fnv_blocklist_hashes.txt"
+            "outputs/behavior_flow_reconstruction.txt"
             "legal_compliance/Section_63_BSA_Certificate.md"
             "legal_compliance/CERT_In_Incident_Notification_Template.md"
             "docs/Investigation_Report.md"
             "docs/Presentation_Script.md"
             "docs/Presentation_Slides_Outline.md"
+            "docs/sunburst_simulation.html"
             "scripts/run_forensics.py"
             "scripts/verify_hashes.sh"
             "scripts/generate_bsa_cert.py"

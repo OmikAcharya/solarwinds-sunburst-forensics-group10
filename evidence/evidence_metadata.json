@@ -21,7 +21,7 @@
       {
         "name": "Om Lanke",
         "roll_number": "16010123216",
-        "role": "Cyber Legal Auditor (IT Act, CERT-In, BSA 2023 Compliance)"
+        "role": "Cyber Legal Auditor (IT Act, CERT-In, BSA 2023, DPDP 2023, BNSS 2023)"
       }
     ]
   },
@@ -37,13 +37,14 @@
       "md5": "b91641a45351f013325d46b7972ba5e3",
       "sha1": "1b1b46f55444e21ab1700684fb65be0efbe7c4eb",
       "sha256": "325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73",
+      "sha256_variant": "32519b85c0b422e4656de6e6c41878e95fd95026267daab4215ee59c107d6c77",
       "ssdeep": "12288:7B0aW0kPzY3N1+4+d9aXm6F/k8L2nJ41qO3p7z:7B0aW0kPzY3N1+4+d9aXm6F/k8L2nJ41q",
       "imphash": "dae02f32a21e03ce65412f6e56942daa"
     },
     "authenticode_signature": {
       "signed": true,
       "signer_identity": "SolarWinds Worldwide, LLC",
-      "signer_dn": "CN=SolarWinds Worldwide, LLC, OU=Software Engineering, O=SolarWinds Worldwide, LLC, L=Austin, S=Texas, C=US",
+      "signer_dn": "CN=SolarWinds Worldwide, LLC, OU=Software Engineering, O=\"SolarWinds Worldwide, LLC\", L=Austin, S=Texas, C=US",
       "issuer": "DigiCert SHA2 Assured ID Code Signing CA",
       "issuer_dn": "CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US",
       "serial_number": "0d 44 4d 63 f5 84 68 86 11 18 01 4b d8 a7 62 1e",
@@ -55,26 +56,53 @@
     },
     "threat_intelligence": {
       "malware_family": "SUNBURST (aka Solorigate)",
-      "threat_actor": "UNC2452 / APT29 / Nobelium / Cozy Bear",
+      "threat_actor": "UNC2452 / APT29 / Nobelium / Cozy Bear (Russia SVR)",
       "attack_type": "Software Supply Chain Compromise (MITRE ATT&CK T1195.002)",
-      "injection_vector": "Trojanized MSBuild source modification prior to assembly compilation",
+      "injection_vector": "Trojanized MSBuild source modification prior to assembly compilation (SUNSPOT injector)",
       "dormancy_window": "12 to 14 days delay prior to active command execution",
+      "victim_reach": {
+        "organisations_installed_update": 18000,
+        "organisations_targeted_stage_2": 100
+      },
       "primary_c2_dga_apex": "avsvmcloud.com",
       "malicious_class": "SolarWinds.Orion.Core.BusinessLayer.OrionImprovementBusinessLayer",
-      "malicious_methods": [
-        "Initialize()",
-        "Update()",
-        "Check()",
-        "Delay()",
-        "GetHash()"
-      ]
+      "helper_classes": [
+        "ZipHelper",
+        "CryptoHelper",
+        "ProcessTracker",
+        "ConfigManager"
+      ],
+      "crypto_obfuscation_parameters": {
+        "string_algorithm": "Raw Deflate decompression over Base64 payload",
+        "process_blacklist_hashing": "FNV-1a 64-bit normalized lowercase",
+        "fnv_offset_basis": "0xcbf29ce484222325",
+        "fnv_prime": "0x100000001b3",
+        "xor_key_hex": "0x5BAC903BA7D81967",
+        "xor_key_decimal": 6605813339339102567
+      }
     },
+    "incident_chronology": [
+      { "date": "2019-09", "event": "Attackers gain unauthorized persistent access to SolarWinds internal network." },
+      { "date": "2019-10", "event": "Harmless test code injected into Orion build to validate POC injection mechanism." },
+      { "date": "2020-02", "event": "SUNBURST backdoor code injected into the active Orion build system via SUNSPOT." },
+      { "date": "2020-03 to 2020-06", "event": "Signed, trojanized software updates (v2020.2.1 HF 1) shipped to 18,000 customers." },
+      { "date": "2020-12-08", "event": "FireEye publicly discloses breach of its internal red-team tooling." },
+      { "date": "2020-12-13", "event": "SUNBURST supply chain intrusion publicly disclosed; CISA Emergency Directive 21-01 issued." },
+      { "date": "2021-04", "event": "United States formally attributes campaign to Russian Foreign Intelligence Service (SVR)." }
+    ],
     "forensic_acquisition": {
-      "acquisition_standard": "ISO/IEC 27037:2012 (Guidelines for identification, collection, acquisition, and preservation of digital evidence)",
-      "analysis_standard": "ISO/IEC 27042:2015 (Guidelines for the analysis and interpretation of digital evidence)",
-      "write_blocker": "Tableau T8u Forensic USB 3.0 Bridge (Hardware Write-Block)",
-      "workstation_os": "Forensic Workstation (Ubuntu 22.04 LTS / macOS Darwin)",
-      "custody_verification": "Cryptographic bit-stream hash equality validated at ingress and egress"
+      "acquisition_standard": "ISO/IEC 27037:2012 (Digital Evidence Identification, Collection, Acquisition and Preservation)",
+      "analysis_standard": "ISO/IEC 27042:2015 (Analysis and Interpretation of Digital Evidence)",
+      "write_blocker": "Tableau T8u Forensic USB 3.0 Bridge (Hardware Write-Block Active)",
+      "workstation_os": "Forensic Workstation (macOS Darwin / Ubuntu 22.04 LTS)",
+      "custody_verification": "Cryptographic bit-stream hash equality validated at ingress, triage, and egress",
+      "statutory_compliance": [
+        "Bharatiya Sakshya Adhiniyam (BSA), 2023 - Section 63",
+        "Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023 - Digital Evidence Handling",
+        "Information Technology Act, 2000 - Sections 43, 66, 66F, 70, 70B",
+        "CERT-In Cyber Security Directions (28 April 2022) - 6-Hour Disclosure Window & 180-Day Log Retention",
+        "Digital Personal Data Protection (DPDP) Act, 2023 - Data Breach Notification"
+      ]
     }
   }
 }

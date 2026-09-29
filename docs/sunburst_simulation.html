@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SUNBURST Static Forensics Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6ECEF; --panel:#F7F9FA; --ink:#15212B; --muted:#56646F; --line:#C5D0D6;
+  --marker:#F2C230; --marker-ink:#2A2100; --bad:#C0352B; --bad-bg:#F8E1DE;
+  --ok:#2B6F77; --ok-bg:#DCEDEE; --term:#17232C; --term-ink:#D5E3E8; --term-dim:#7F97A3; --dot:#B9C6CD;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10181E; --panel:#18232B; --ink:#E3EAEE; --muted:#93A4AE; --line:#2C3B45;
+  --bad:#EF6B5E; --bad-bg:#3A1D1A; --ok:#6FC0C8; --ok-bg:#15343A; --term:#0B1216; --dot:#33444F;
+}}
+:root[data-theme="dark"]{
+  --bg:#10181E; --panel:#18232B; --ink:#E3EAEE; --muted:#93A4AE; --line:#2C3B45;
+  --bad:#EF6B5E; --bad-bg:#3A1D1A; --ok:#6FC0C8; --ok-bg:#15343A; --term:#0B1216; --dot:#33444F;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:4px;background:var(--line)}
+.progress i{display:block;height:100%;width:0;background:var(--marker);transition:width .5s ease}
+.wrap{max-width:1200px;margin:0 auto;padding:22px 20px 110px}
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h1{font-size:clamp(1.6rem,3.2vw,2.4rem);line-height:1.1;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 0;max-width:64ch}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1.5px solid var(--ink);background:transparent;color:var(--ink);padding:7px 13px;border-radius:6px;font-weight:500}
+.btn.primary{background:var(--ink);color:var(--panel)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.small{padding:4px 10px;font-size:.85rem}
+.note{margin:14px 0 20px;padding:10px 14px;border-left:4px solid var(--marker);background:var(--panel);color:var(--muted);font-size:.88rem}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:28px}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+nav.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;position:sticky;top:20px}
+@media (max-width:860px){nav.rail ol{flex-direction:row;overflow-x:auto;padding-bottom:6px;position:static}}
+.step{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:7px 6px;border-radius:6px;color:var(--muted);white-space:nowrap;font-size:.93rem}
+.step[aria-current="step"]{color:var(--ink);background:var(--panel);font-weight:600}
+.step.done .tent{background:var(--ink);color:var(--panel)}
+.tent{flex:none;width:30px;height:25px;display:grid;place-items:center;background:var(--marker);color:var(--marker-ink);font-weight:700;font-size:.82rem;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+main.stage{min-width:0}
+.stage h2{font-size:1.55rem;margin:0 0 4px;line-height:1.2}
+.stage .lead{color:var(--muted);margin:0 0 18px;max-width:72ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:18px}
+.panel h3{margin:0 0 10px;font-size:1.05rem}
+.panel .hint{margin:-4px 0 12px;color:var(--muted);font-size:.88rem}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.grid2>*,.map>*{min-width:0}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.term{background:var(--term);color:var(--term-ink);border-radius:8px;padding:14px 16px;font-size:.8rem;line-height:1.55;min-height:140px;overflow-x:auto;white-space:pre;margin:0}
+.term .dim{color:var(--term-dim)} .term .warn{color:#F2C230} .term .hit{color:#FF8A7E} .term .good{color:#7FD3DA}
+.caret::after{content:"▋";animation:blink 1s steps(1) infinite;color:var(--term-dim)}
+@keyframes blink{50%{opacity:0}}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted)}
+td code{font-size:.8rem;word-break:break-all}
+tr.new{animation:rowin .6s ease}
+@keyframes rowin{from{background:var(--marker)}to{background:transparent}}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.76rem;font-weight:600;white-space:nowrap}
+.tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.ok{background:var(--ok-bg);color:var(--ok)}
+.hash{font-family:"IBM Plex Mono",monospace;font-size:.84rem;word-break:break-all;padding:10px;border:1px dashed var(--line);border-radius:6px;min-height:44px;letter-spacing:.02em}
+.hash span.m{color:var(--ok);font-weight:500}
+.meter{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;margin:10px 0}
+.meter i{display:block;height:100%;width:0;background:var(--ok)}
+.counter{font-size:2rem;font-weight:700;line-height:1}
+.counter small{display:block;font-size:.85rem;font-weight:400;color:var(--muted);margin-top:4px}
+.stats{display:flex;gap:30px;flex-wrap:wrap;margin-top:14px}
+/* supply chain svg */
+svg text{font-family:"IBM Plex Sans",system-ui,sans-serif;fill:var(--ink)}
+.sc-node rect{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+.sc-node.hot rect{stroke:var(--bad);stroke-width:2.5}
+.sc-path{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:5 5}
+.sc-path.on{stroke:var(--muted)}
+.sc-path.evil{stroke:var(--bad)}
+.cust{fill:var(--dot);transition:fill .3s}
+.cust.inst{fill:var(--ok)}
+.cust.tgt{fill:var(--bad)}
+.pkt{fill:var(--marker);stroke:var(--ink);stroke-width:1}
+.pkt.bad{fill:var(--bad)}
+/* timeline */
+.tl{position:relative;padding:10px 0 0}
+.tl-line{position:absolute;left:0;right:0;top:36px;height:3px;background:var(--line)}
+.tl-fill{position:absolute;left:0;top:36px;height:3px;background:var(--bad);width:0;transition:width .9s ease}
+.tl-items{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;position:relative}
+@media (max-width:760px){.tl-items{grid-template-columns:1fr}.tl-line,.tl-fill{display:none}}
+.tl-item{opacity:.25;transition:opacity .5s}
+.tl-item.on{opacity:1}
+.tl-date{font-weight:600;font-size:.88rem;height:22px}
+.tl-pin{width:16px;height:16px;border-radius:50%;background:var(--panel);border:3px solid var(--ok);margin:4px 0 10px}
+.tl-item.key .tl-pin{border-color:var(--bad);background:var(--bad)}
+.tl-item p{margin:0;font-size:.85rem;color:var(--muted)}
+/* DiE */
+.pemap{display:flex;height:54px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;position:relative}
+.pemap div{display:grid;place-items:center;font-size:.76rem;border-right:1px solid var(--line);transition:background .3s;text-align:center;line-height:1.2}
+.pemap div.seen{background:var(--ok-bg)}
+.beam{position:absolute;top:0;bottom:0;width:3px;background:var(--marker);box-shadow:0 0 12px 3px var(--marker);left:0;opacity:0}
+.detect{list-style:none;margin:12px 0 0;padding:0;font-size:.9rem}
+.detect li{padding:5px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;animation:rowin .6s ease}
+.hex{font-family:"IBM Plex Mono",monospace;font-size:.76rem;line-height:1.6;background:var(--term);color:var(--term-ink);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;margin:0}
+.hex .off{color:var(--term-dim)} .hex .hl{background:#F2C230;color:#1a1400;border-radius:2px}
+.entropy-svg .grid{stroke:var(--line);stroke-width:1}
+.entropy-svg .limit{stroke:var(--bad);stroke-dasharray:6 4;stroke-width:1.5}
+.entropy-svg .curve{fill:none;stroke:var(--ok);stroke-width:2.5}
+.entropy-svg text{font-size:11px;fill:var(--muted)}
+/* FLOSS */
+.stream{height:220px;overflow:hidden;position:relative}
+.stream .term{height:100%;min-height:0}
+.decode-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.decode-row code{font-size:.76rem;word-break:break-all;color:var(--muted)}
+.decode-row .out{font-family:"IBM Plex Mono",monospace;font-size:.82rem;color:var(--bad);word-break:break-all;min-height:1.2em}
+@media (max-width:640px){.decode-row{grid-template-columns:1fr}}
+/* FNV pipeline */
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+@media (max-width:760px){.pipe{grid-template-columns:1fr}}
+.pbox{border:1.5px solid var(--line);border-radius:8px;padding:10px;min-height:92px;transition:border-color .3s,background .3s}
+.pbox.on{border-color:var(--ok);background:var(--ok-bg)}
+.pbox.bad{border-color:var(--bad);background:var(--bad-bg)}
+.pbox b{display:block;font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:6px}
+.pbox span{font-family:"IBM Plex Mono",monospace;font-size:.78rem;word-break:break-all}
+.inrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inrow input{font:inherit;padding:7px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);min-width:200px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+/* CAPA */
+.matrix{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.tactic h4{margin:0 0 6px;font-size:.82rem;color:var(--muted);font-weight:600}
+.tech{border:1px solid var(--line);border-radius:6px;padding:7px 9px;margin-bottom:6px;font-size:.82rem;background:var(--bg);transition:background .4s,border-color .4s,transform .4s}
+.tech b{display:block;font-size:.74rem;color:var(--muted);font-weight:500}
+.tech.on{background:var(--bad-bg);border-color:var(--bad);transform:scale(1.03)}
+.tech.on b{color:var(--bad)}
+.tech.ctx{border-style:dashed}
+.caps{list-style:none;padding:0;margin:0}
+.caps li{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.3fr) auto;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.86rem;animation:rowin .6s ease}
+.caps li code{font-size:.76rem;color:var(--muted);word-break:break-all}
+@media (max-width:640px){.caps li{grid-template-columns:1fr}}
+/* behaviour flow */
+.envpick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.envpick button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.flow{list-style:none;margin:0;padding:0;counter-reset:f}
+.flow li{position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) minmax(0,.9fr);gap:12px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:22px;background:var(--panel);transition:border-color .3s,background .3s,opacity .3s}
+.flow li::after{content:"";position:absolute;left:28px;bottom:-22px;width:2px;height:22px;background:var(--line)}
+.flow li:last-child::after{display:none}
+.flow li .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-weight:600;font-size:.85rem}
+.flow li .t{font-weight:600;font-size:.93rem}
+.flow li .d{color:var(--muted);font-size:.85rem}
+.flow li .ev{font-size:.8rem;color:var(--ok);align-self:center}
+.flow li.active{border-color:var(--marker);background:var(--bg)}
+.flow li.pass{border-color:var(--ok)}
+.flow li.pass .n{background:var(--ok);color:var(--panel)}
+.flow li.stop{border-color:var(--bad);background:var(--bad-bg)}
+.flow li.stop .n{background:var(--bad);color:#fff}
+.flow li.skip{opacity:.35}
+@media (max-width:640px){.flow li{grid-template-columns:34px 1fr}.flow li .ev{grid-column:2}}
+.verdict{padding:12px 14px;border-radius:8px;font-weight:600;margin-top:4px;display:none}
+.verdict.show{display:block;animation:rowin .6s ease}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)} .verdict.ok{background:var(--ok-bg);color:var(--ok)}
+/* law */
+.map{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.map{grid-template-columns:1fr}}
+.find{display:block;width:100%;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:8px;color:var(--ink)}
+.find[aria-pressed="true"]{border-color:var(--marker);background:var(--panel);box-shadow:inset 4px 0 0 var(--marker)}
+.law{border:1.5px solid var(--line);padding:9px 12px;margin-bottom:8px;border-radius:8px;transition:border-color .3s,background .3s,opacity .3s}
+.law strong{display:block;font-size:.92rem}
+.law span{color:var(--muted);font-size:.84rem}
+.law.on{border-color:var(--ok);background:var(--ok-bg)}
+.law.dim{opacity:.4}
+/* conclusion */
+.qa{list-style:none;margin:0;padding:0}
+.qa li{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);opacity:.2;transition:opacity .5s}
+.qa li.on{opacity:1}
+.qa .ck{width:26px;height:26px;border-radius:50%;background:var(--ok);color:var(--panel);display:grid;place-items:center;font-weight:700}
+.qa .q{font-weight:600}
+.qa .a{color:var(--muted);font-size:.92rem}
+.navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:.9rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;word-break:break-all}
+/* caption bar */
+.caption{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ink);color:var(--panel);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));font-size:1.02rem;line-height:1.45;transform:translateY(110%);visibility:hidden;transition:transform .4s ease,visibility .4s}
+.caption.show{transform:none;visibility:visible}
+.caption div{max-width:1100px;margin:0 auto}
+.caption b{color:var(--marker);font-weight:600;margin-right:8px}
+/* presentation mode */
+body.present .note, body.present header .sub, body.present nav.rail{display:none}
+body.present .layout{grid-template-columns:1fr}
+body.present{font-size:17px}
+.stage-in{animation:stagein .45s ease}
+@keyframes stagein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="prog"></i></div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>SUNBURST static forensics lab</h1>
+      <p class="sub">An animated simulation of examining the trojanised SolarWinds Orion DLL with Detect It Easy, FLOSS and CAPA, without ever running it.</p>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="play">Play walkthrough</button>
+      <button class="btn" id="capBtn" aria-pressed="false">Captions</button>
+      <button class="btn" id="presBtn" aria-pressed="false">Presentation mode</button>
+      <button class="btn" id="theme">Theme</button>
+    </div>
+  </header>
+  <p class="note">Simulation for teaching and presentation. Tool outputs, entropy values and hex bytes are illustrative, modelled on public SUNBURST analyses by FireEye/Mandiant and CISA. The string decoder and FNV hash checker perform real calculations. Use your own tool results in your report. Keyboard: ← → to change stage, P to play, C for captions.</p>
+  <div class="layout">
+    <nav class="rail" aria-label="Investigation stages"><ol id="rail"></ol></nav>
+    <main class="stage" id="stage" aria-live="polite"></main>
+  </div>
+</div>
+<div class="caption" id="caption" aria-live="polite"><div><b id="capN"></b><span id="capT"></span></div></div>
+
+<script>
+/* ================= data ================= */
+const SHA256="32519b85c0b422e4656de6e6c41878e95fd95026267daab4215ee59c107d6c77";
+const FILE="SolarWinds.Orion.Core.BusinessLayer.dll";
+const ENC=[
+ ["SywrLstNzskvTdFLzs8FAA==","C2 domain"],
+ ["C/Z3Cwl3DHKN8c1MLsovzk8riXEuqiwoyU8vSizIqAQA","Registry path"],
+ ["801MzsjMS3UvzUwBAA==","Registry value (victim ID source)"],
+ ["C07NSU0uUdBScCvKz1UIz8wzNor3Sy0pzy/KdkxJLChJLXLOz0vLTC8tSizJzM9TKM9ILUpV8AxwzUtMyklNsS0pKk0FAA==","WMI query"],
+ ["C0otyC8qCU8sSc5ILQpKLSmqBAA=","Config setting"],
+ ["SyzI1CvOz0ksKs/MSynWS87PBQA=","Connectivity check host"],
+ ["C44MDnH1jXEuLSpKzStxzs8rKcrPCU4tiSlOLSrLTE4tBgA=","Services registry key"]
+];
+const XORKEY=6605813339339102567n;
+const DEMO_BLOCK=["wireshark","procmon","procexp","fiddler","x64dbg","ida64","dnspy","autoruns","tcpview","ollydbg"];
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let epoch=0;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?Math.min(ms,20):ms));
+const alive=ep=>ep===epoch;
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+async function typeLines(el,lines,ep,speed=14){
+  el.innerHTML=""; el.classList.add("caret");
+  for(const l of lines){
+    if(!alive(ep)) return;
+    const s=document.createElement("span"); if(l.c) s.className=l.c; el.appendChild(s);
+    if(reduce){s.textContent=l.t+"\n";continue}
+    for(let k=0;k<l.t.length;k+=3){ if(!alive(ep)) return; s.textContent=l.t.slice(0,k+3); await wait(speed/3); }
+    s.textContent=l.t+"\n"; el.scrollTop=el.scrollHeight; await wait(speed*4);
+  }
+  el.classList.remove("caret");
+}
+async function scramble(el,final,ep,dur=700,set="0123456789abcdef"){
+  const steps=reduce?1:Math.max(8,Math.round(dur/35));
+  for(let s=0;s<=steps;s++){
+    if(!alive(ep)) return;
+    const fixed=Math.floor(final.length*s/steps);
+    el.textContent=final.slice(0,fixed)+Array.from({length:final.length-fixed},()=>set[Math.random()*set.length|0]).join("");
+    await wait(35);
+  }
+  el.textContent=final;
+}
+async function countTo(el,to,ep,dur=1400,fmt=n=>n.toLocaleString("en-IN")){
+  const t0=performance.now();
+  return new Promise(res=>{
+    const tick=now=>{
+      if(!alive(ep)) return res();
+      const p=reduce?1:Math.min(1,(now-t0)/dur); el.textContent=fmt(Math.round(to*(1-Math.pow(1-p,3))));
+      p<1?requestAnimationFrame(tick):res();
+    };requestAnimationFrame(tick);
+  });
+}
+function along(svg,path,ep,dur=1000,cls="pkt"){
+  return new Promise(res=>{
+    const L=path.getTotalLength(); const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r",6); c.setAttribute("class",cls); svg.appendChild(c); const t0=performance.now();
+    const tick=now=>{
+      if(!alive(ep)){c.remove();return res()}
+      const p=reduce?1:Math.min(1,(now-t0)/dur); const pt=path.getPointAtLength(L*p);
+      c.setAttribute("cx",pt.x); c.setAttribute("cy",pt.y);
+      if(p<1) requestAnimationFrame(tick); else {c.remove();res()}
+    };requestAnimationFrame(tick);
+  });
+}
+const fnv1a=s=>{let h=0xcbf29ce484222325n;for(const b of new TextEncoder().encode(s)){h^=BigInt(b);h=(h*0x100000001b3n)&0xFFFFFFFFFFFFFFFFn}return h};
+const hex64=n=>"0x"+n.toString(16).padStart(16,"0");
+async function inflate(b64){
+  const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const ds=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return await new Response(ds).text();
+}
+
+/* ================= stages ================= */
+const stages=[];
+const nav=()=>`<div class="navbtns"><button class="btn" data-go="-1" ${current===0?"disabled":""}>Previous stage</button><button class="btn primary" data-go="1" ${current===stages.length-1?"disabled":""}>Next stage</button></div>`;
+
+/* 1. attack */
+stages.push({name:"The attack",
+narr:"In 2020, attackers broke into SolarWinds' software build system. Every customer who installed the signed Orion update also installed a hidden backdoor called SUNBURST.",
+view:()=>`
+<h2>A backdoor delivered as a trusted update</h2>
+<p class="lead">Attackers inserted SUNBURST into SolarWinds' own build process. The poisoned Orion update was signed and shipped like any other, so customers installed it themselves.</p>
+<div class="panel">
+<svg id="sc" viewBox="0 0 900 360" width="100%" role="img" aria-label="Animated supply chain: attacker to SolarWinds build server to signed update to customers, then command-and-control back to attacker">
+  <path id="p1" class="sc-path" d="M140,110 L210,110"/>
+  <path id="p2" class="sc-path" d="M330,110 L390,110"/>
+  <path id="p3" class="sc-path" d="M510,110 L565,110"/>
+  <path id="p4" class="sc-path" d="M713,208 L713,262"/>
+  <path id="p5" class="sc-path" d="M640,300 C420,345 170,320 80,142"/>
+  <g class="sc-node" id="nA"><rect x="20" y="78" width="120" height="64" rx="8"/><text x="80" y="106" text-anchor="middle" font-weight="600">Attacker</text><text x="80" y="126" text-anchor="middle" font-size="12">APT29 / SVR</text></g>
+  <g class="sc-node" id="nB"><rect x="210" y="78" width="120" height="64" rx="8"/><text x="270" y="106" text-anchor="middle" font-weight="600">Build server</text><text x="270" y="126" text-anchor="middle" font-size="12">SolarWinds</text></g>
+  <g class="sc-node" id="nU"><rect x="390" y="78" width="120" height="64" rx="8"/><text x="450" y="106" text-anchor="middle" font-weight="600">Orion update</text><text x="450" y="126" text-anchor="middle" font-size="12">digitally signed</text></g>
+  <g id="grid"></g>
+  <text x="713" y="198" text-anchor="middle" font-size="12" id="gridLbl">Customers (1 dot = 100 organisations)</text>
+  <g class="sc-node" id="nC"><rect x="640" y="262" width="146" height="64" rx="8"/><text x="713" y="290" text-anchor="middle" font-weight="600">C2 server</text><text x="713" y="310" text-anchor="middle" font-size="12">avsvmcloud[.]com</text></g>
+  <text x="270" y="170" text-anchor="middle" font-size="12" id="lblB" opacity="0">backdoor injected at build time</text>
+  <text x="330" y="290" text-anchor="middle" font-size="12" id="lblC" opacity="0">selected victims handed to attackers</text>
+</svg>
+<div class="stats">
+ <div class="counter"><span id="cInst">0</span><small>organisations installed the update</small></div>
+ <div class="counter" style="color:var(--bad)"><span id="cTgt">0</span><small>approx. organisations chosen for deeper intrusion</small></div>
+ <div class="counter"><span id="cDays">0</span><small>days of dormancy before first contact</small></div>
+</div>
+<button class="btn small" id="replay1" style="margin-top:14px">Replay animation</button>
+</div>${nav()}`,
+async run(ep){
+  const g=$("#grid"); let h="";
+  for(let r=0;r<9;r++)for(let c=0;c<20;c++)h+=`<circle class="cust" cx="${580+c*14}" cy="${40+r*15}" r="4.5"/>`;
+  g.innerHTML=h; const svg=$("#sc");
+  const P=i=>$("#p"+i);
+  $("#nA").classList.add("hot"); P(1).classList.add("evil");
+  await along(svg,P(1),ep,900,"pkt bad"); if(!alive(ep))return;
+  $("#nB").classList.add("hot"); $("#lblB").setAttribute("opacity",1);
+  P(2).classList.add("on"); await along(svg,P(2),ep,800); if(!alive(ep))return;
+  $("#nU").classList.add("hot");
+  P(3).classList.add("on"); await along(svg,P(3),ep,700); if(!alive(ep))return;
+  const dots=$$("#grid .cust"); countTo($("#cInst"),18000,ep,1800);
+  for(let i=0;i<dots.length;i++){ if(!alive(ep))return; dots[i].classList.add("inst"); if(i%6===0) await wait(50); }
+  await wait(300); await countTo($("#cDays"),14,ep,900,n=>n===14?"12–14":String(n)); if(!alive(ep))return;
+  P(4).classList.add("on"); await along(svg,P(4),ep,700); if(!alive(ep))return;
+  $("#nC").classList.add("hot");
+  [37,112,151].forEach(i=>dots[i].classList.add("tgt"));
+  P(5).classList.add("evil"); $("#lblC").setAttribute("opacity",1);
+  countTo($("#cTgt"),100,ep,900);
+  await along(svg,P(5),ep,1300,"pkt bad");
+},
+bind(){ $("#replay1").onclick=()=>rerun(); }
+});
+
+/* 2. timeline */
+const TL=[
+ ["Sep 2019","Attackers gain access to SolarWinds' network.",0],
+ ["Oct 2019","Harmless test code added to an Orion build.",0],
+ ["Feb 2020","SUNBURST injected into the build process.",1],
+ ["Mar–Jun 2020","Signed, trojanised updates shipped to customers.",1],
+ ["8 Dec 2020","FireEye discloses its own breach.",0],
+ ["13 Dec 2020","SUNBURST disclosed; CISA Emergency Directive 21-01.",1],
+ ["Apr 2021","US attributes the campaign to Russia's SVR.",0]];
+stages.push({name:"Timeline",
+narr:"The attackers were inside SolarWinds for over a year. The backdoor shipped in spring 2020 and went unnoticed until FireEye investigated its own breach in December 2020.",
+view:()=>`
+<h2>Fifteen months from access to discovery</h2>
+<p class="lead">The long gap shows why static forensics matters: the malware was signed and quiet, so nobody looked at the code until after the breach was found.</p>
+<div class="panel"><div class="tl"><div class="tl-line"></div><div class="tl-fill" id="tlf"></div>
+<div class="tl-items">${TL.map(t=>`<div class="tl-item ${t[2]?"key":""}"><div class="tl-date">${t[0]}</div><div class="tl-pin"></div><p>${t[1]}</p></div>`).join("")}</div></div></div>
+<div class="grid2">
+<div class="panel"><h3>The evidence we examine</h3>
+<dl class="kv"><dt>File</dt><dd><code>${FILE}</code></dd><dt>Type</dt><dd>Windows DLL (.NET)</dd><dt>SHA-256</dt><dd><code>${SHA256}</code></dd><dt>Method</dt><dd>Static analysis only; never executed</dd></dl></div>
+<div class="panel"><h3>Investigation questions</h3>
+<ol style="margin:0;padding-left:20px"><li>What kind of file is it, and is it disguised?</li><li>What is it hiding in its text?</li><li>What is it capable of doing?</li><li>How does it avoid detection?</li><li>Which Indian laws apply?</li></ol></div></div>
+${nav()}`,
+async run(ep){
+  const items=$$(".tl-item");
+  for(let i=0;i<items.length;i++){ if(!alive(ep))return; items[i].classList.add("on"); $("#tlf").style.width=((i+.5)/items.length*100)+"%"; await wait(700); }
+}});
+
+/* 3. evidence */
+stages.push({name:"Evidence & hashing",
+narr:"Before touching the file, we record where it came from and compute its SHA-256 hash. This digital fingerprint proves later that our analysis did not change the evidence.",
+view:()=>`
+<h2>Acquire, fingerprint, record</h2>
+<p class="lead">The sample is downloaded as a password-protected archive, extracted in an isolated folder, and hashed before any analysis.</p>
+<div class="grid2">
+<div class="panel"><h3>Computing SHA-256</h3>
+<pre class="term" id="hterm" style="min-height:110px"></pre>
+<div class="meter"><i id="hmeter"></i></div>
+<p style="margin:10px 0 4px;color:var(--muted);font-size:.88rem">Computed</p><div class="hash" id="hcalc"></div>
+<p style="margin:10px 0 4px;color:var(--muted);font-size:.88rem">Published by FireEye / CISA</p><div class="hash">${SHA256}</div>
+<p id="hres" style="margin:10px 0 0"></p>
+<button class="btn small" id="replay3" style="margin-top:10px">Recompute</button></div>
+<div class="panel"><h3>Chain of custody</h3>
+<div class="tablewrap"><table><thead><tr><th>Time (IST)</th><th>Action</th><th>By</th></tr></thead><tbody id="cust"></tbody></table></div></div>
+</div>${nav()}`,
+async run(ep){
+  const rows=[["14:00","Sample downloaded from MalwareBazaar (zip, password protected)","Member 1"],["14:05","Archive extracted to isolated evidence folder","Member 1"],["14:10","SHA-256 computed and verified","Member 1"],["14:20","Evidence handed over for static analysis","Member 2"]];
+  const tb=$("#cust"); tb.innerHTML="";
+  const addRow=r=>tb.insertAdjacentHTML("beforeend",`<tr class="new"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`);
+  addRow(rows[0]); await wait(500); addRow(rows[1]);
+  typeLines($("#hterm"),[{t:"PS> Get-FileHash .\\"+FILE+" -Algorithm SHA256",c:"dim"},{t:"reading file blocks..."}],ep);
+  const m=$("#hmeter"); const t0=performance.now();
+  scramble($("#hcalc"),SHA256,ep,2200);
+  await new Promise(res=>{const tick=n=>{if(!alive(ep))return res();const p=reduce?1:Math.min(1,(n-t0)/2200);m.style.width=p*100+"%";p<1?requestAnimationFrame(tick):res()};requestAnimationFrame(tick)});
+  await wait(200); if(!alive(ep))return;
+  $("#hcalc").innerHTML=`<span class="m">${SHA256}</span>`;
+  $("#hres").innerHTML='<span class="tag ok">Match</span> The file is the known SUNBURST sample.';
+  addRow(rows[2]); await wait(600); addRow(rows[3]);
+},
+bind(){ $("#replay3").onclick=()=>rerun(); }
+});
+
+/* 4. DiE */
+const PEMAP=[["DOS header",4],["PE header",5],["Section table",6],[".text (code)",58],[".rsrc",17],[".reloc",4],["Signature",6]];
+const DETECTS=[[4,"PE32 executable, DLL","ok"],[9,"Architecture: I386","ok"],[30,"Library: .NET (CLR v4.0.30319)","ok"],[55,"Compiler: C#","ok"],[70,"Packer / protector: none found","bad"],[85,"Version info: SolarWinds Orion","bad"],[97,"Authenticode signature present","bad"]];
+stages.push({name:"Detect It Easy",
+narr:"Detect It Easy identifies the file. It is a normal .NET library, compiled in C#, not packed, and signed by SolarWinds. That is exactly why it went undetected: it looked genuine.",
+view:()=>`
+<h2>Detect It Easy: what is this file?</h2>
+<p class="lead">DiE scans the file structure against its signature database to identify format, compiler and packers.</p>
+<div class="panel"><h3>Scanning file structure</h3>
+<div class="pemap" id="pemap">${PEMAP.map(p=>`<div style="flex:${p[1]}">${p[0]}</div>`).join("")}<span class="beam" id="beam"></span></div>
+<ul class="detect" id="detect"></ul></div>
+<div class="grid2">
+<div class="panel"><h3>Hex view: start of file (illustrative)</h3><pre class="hex" id="hex"></pre>
+<p class="hint" style="margin:10px 0 0">The bytes <b>4D 5A</b> ("MZ") and <b>50 45</b> ("PE") mark a Windows executable.</p></div>
+<div class="panel"><h3>Entropy across the file (illustrative)</h3>
+<svg class="entropy-svg" viewBox="0 0 420 220" width="100%" role="img" aria-label="Entropy graph staying below the packed threshold">
+ ${[0,2,4,6,8].map(v=>`<line class="grid" x1="36" x2="410" y1="${190-v*21}" y2="${190-v*21}"/><text x="28" y="${194-v*21}" text-anchor="end">${v}</text>`).join("")}
+ <line class="limit" x1="36" x2="410" y1="${190-7.5*21}" y2="${190-7.5*21}"/>
+ <text x="408" y="${184-7.5*21}" text-anchor="end" style="fill:var(--bad)">7.5 packed threshold</text>
+ <path class="curve" id="ecurve" d=""/>
+ <text x="100" y="210">.text</text><text x="300" y="210">.rsrc</text><text x="385" y="210">.reloc</text>
+</svg>
+<p id="entv" style="margin:6px 0 0"></p></div>
+</div>${nav()}`,
+async run(ep){
+  // hex
+  const bytes=[0x4D,0x5A,0x90,0,3,0,0,0,4,0,0,0,0xFF,0xFF,0,0,0xB8,0,0,0,0,0,0,0,0x40,0,0,0,0,0,0,0];
+  for(let i=0;i<28;i++)bytes.push(0); bytes.push(0x80,0,0,0);
+  const stub=[0x0E,0x1F,0xBA,0x0E,0,0xB4,9,0xCD,0x21,0xB8,1,0x4C,0xCD,0x21];
+  const msg="This program cannot be run in DOS mode.\r\r\n$";
+  bytes.push(...stub,...[...msg].map(c=>c.charCodeAt(0))); while(bytes.length<128)bytes.push(0);
+  bytes.push(0x50,0x45,0,0,0x4C,1,3,0); while(bytes.length<144)bytes.push(0);
+  let hx="";
+  for(let r=0;r<bytes.length;r+=16){
+    const row=bytes.slice(r,r+16);
+    const hexs=row.map((b,i)=>{const s=b.toString(16).padStart(2,"0").toUpperCase();const idx=r+i;return (idx<2||(idx>=128&&idx<130))?`<span class="hl">${s}</span>`:s}).join(" ");
+    const asc=row.map(b=>b>=32&&b<127?esc(String.fromCharCode(b)):".").join("");
+    hx+=`<span class="off">${r.toString(16).padStart(8,"0")}</span>  ${hexs}  ${asc}\n`;
+  }
+  $("#hex").innerHTML=hx;
+  // beam scan
+  const beam=$("#beam"), map=$("#pemap"), segs=$$("#pemap div"), list=$("#detect"); list.innerHTML="";
+  beam.style.opacity=1; let di=0; const t0=performance.now(), D=3600;
+  let acc=0; const bounds=PEMAP.map(p=>(acc+=p[1]));
+  await new Promise(res=>{const tick=n=>{
+    if(!alive(ep))return res();
+    const p=reduce?1:Math.min(1,(n-t0)/D), pct=p*100;
+    beam.style.left=`calc(${pct}% - 2px)`;
+    segs.forEach((s,i)=>{if(pct>=(i?bounds[i-1]:0)) s.classList.add("seen")});
+    while(di<DETECTS.length&&pct>=DETECTS[di][0]){const d=DETECTS[di++];list.insertAdjacentHTML("beforeend",`<li><span>${d[1]}</span><span class="tag ${d[2]}">${d[2]==="ok"?"Identified":"Notable"}</span></li>`)}
+    p<1?requestAnimationFrame(tick):res()};requestAnimationFrame(tick)});
+  beam.style.opacity=0; if(!alive(ep))return;
+  // entropy curve
+  const pts=[]; for(let x=0;x<=100;x++){let v; if(x<4)v=1.5+x*.8; else if(x<66)v=5.6+Math.sin(x*.9)*.35+Math.sin(x*.23)*.2; else if(x<92)v=3.4+Math.sin(x*1.3)*.5; else v=.4+Math.sin(x)*.2; pts.push([36+x*3.74,190-v*21])}
+  const c=$("#ecurve"); c.setAttribute("d","M"+pts.map(p=>p.map(n=>n.toFixed(1)).join(",")).join(" L"));
+  const L=c.getTotalLength(); c.style.strokeDasharray=L; c.style.strokeDashoffset=L;
+  c.getBoundingClientRect(); c.style.transition=reduce?"none":"stroke-dashoffset 1.8s ease"; c.style.strokeDashoffset=0;
+  await wait(1900); if(!alive(ep))return;
+  $("#entv").innerHTML='<span class="tag ok">Not packed</span> Overall entropy about 5.9 of 8, well below the threshold.';
+}});
+
+/* 5. FLOSS */
+const STRS=["mscorlib","System","System.Core","SolarWinds.Orion.Core.BusinessLayer","OrionImprovementBusinessLayer","ZipHelper","Unzip","Zip","System.IO.Compression","DeflateStream","Convert","FromBase64String","ToBase64String","HttpWebRequest","HttpWebResponse","WebProxy","RegistryKey","OpenSubKey","GetValue","Process","GetProcesses","ManagementObjectSearcher","Dns","GetHostAddresses","Thread","Sleep","DateTime","IPAddress","NetworkInterface","Environment","get_MachineName","Guid","SHA256","MD5","ProcessTracker","ConfigManager","UpdateNotification","JobEngine","HttpHelper","DnsHelper","CryptoHelper","ReportStatus",...ENC.map(e=>e[0])];
+const HOT=new Set(["OrionImprovementBusinessLayer","ZipHelper","Unzip","DeflateStream","FromBase64String","HttpWebRequest","RegistryKey","GetProcesses","Dns","Sleep","JobEngine"]);
+stages.push({name:"FLOSS strings",
+narr:"FLOSS pulls every string out of the file. It warns that .NET deobfuscation is not supported, but the static strings still reveal the backdoor class and a decompression helper. The important strings are scrambled, so we decode them ourselves.",
+view:()=>`
+<h2>FLOSS: what text is hidden inside?</h2>
+<p class="lead">FLOSS extracts readable strings. SUNBURST protects its important ones by compressing them with Deflate and encoding the result in Base64.</p>
+<div class="grid2">
+<div class="panel"><h3>floss output (illustrative)</h3><div class="stream"><pre class="term" id="fterm"></pre></div></div>
+<div class="panel"><h3>What stands out</h3>
+<div class="counter"><span id="fcount">0</span><small>static strings extracted (illustrative)</small></div>
+<ul class="detect" id="fhot"></ul></div>
+</div>
+<div class="panel"><h3>Decoding the hidden strings</h3>
+<p class="hint">Demo strings encoded with SUNBURST's scheme. Each is decoded for real in your browser: Base64 decode, then raw Deflate decompress.</p>
+<div id="drows">${ENC.map((e,i)=>`<div class="decode-row"><code>${e[0]}</code><button class="btn small" data-k="${i}">Decode</button><span class="out" id="o${i}"></span></div>`).join("")}</div>
+<button class="btn primary small" id="dall" style="margin-top:12px">Decode all</button>
+</div>${nav()}`,
+async run(ep){
+  const el=$("#fterm"); el.innerHTML="";
+  const push=(t,c)=>{const s=document.createElement("span");if(c)s.className=c;s.textContent=t+"\n";el.appendChild(s);el.parentElement.scrollTop=0;el.scrollTop=el.scrollHeight};
+  push("> floss "+FILE,"dim"); await wait(400);
+  push("WARNING: .NET string deobfuscation is not supported;","warn");
+  push("         extracting static strings only.","warn"); await wait(700);
+  push("FLOSS STATIC STRINGS (UTF-8 / UTF-16LE)","dim");
+  countTo($("#fcount"),2146,ep,STRS.length*110);
+  for(const s of STRS){ if(!alive(ep))return;
+    const enc=ENC.some(e=>e[0]===s); push(enc?s+"   <- unreadable":s, HOT.has(s)?"hit":enc?"warn":"");
+    if(HOT.has(s)) $("#fhot").insertAdjacentHTML("beforeend",`<li><code>${s}</code><span class="tag bad">Suspicious</span></li>`);
+    await wait(110);
+  }
+  await wait(400); if(!alive(ep))return;
+  for(let i=0;i<ENC.length;i++){ await decode(i,ep); await wait(250); if(!alive(ep))return; }
+},
+bind(){
+  $$("#drows button").forEach(b=>b.onclick=()=>decode(+b.dataset.k,epoch));
+  $("#dall").onclick=async()=>{const ep=epoch;for(let i=0;i<ENC.length;i++){await decode(i,ep);await wait(200)}};
+}});
+async function decode(i,ep){
+  const out=$("#o"+i); if(!out) return;
+  let txt; try{txt=await inflate(ENC[i][0])}catch(e){out.textContent="Your browser cannot decompress Deflate; use a current Chrome, Edge, Firefox or Safari.";return}
+  await scramble(out,txt,ep,600,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=");
+  if(alive(ep)) out.title=ENC[i][1];
+}
+
+/* 6. FNV blocklist */
+stages.push({name:"Hidden blocklist",
+narr:"SUNBURST checks for analysis tools like Wireshark. Instead of storing their names, which would give it away, it stores hashes. Here we compute the same FNV-1a hash and XOR key to see how the check works.",
+view:()=>`
+<h2>How SUNBURST hid its list of security tools</h2>
+<p class="lead">Before activating, SUNBURST compared running processes against a list of analysis and security tools. The list was stored as FNV-1a 64-bit hashes XORed with a fixed key, so a plain string search reveals nothing. CAPA flags this as "hash data using FNV".</p>
+<div class="panel">
+<div class="inrow"><input id="pin" value="Wireshark" aria-label="Process name"><button class="btn primary" id="pgo">Run the check</button></div>
+<div class="chips">${["procmon","notepad","fiddler","chrome","x64dbg"].map(p=>`<button class="btn small" data-p="${p}">${p}</button>`).join("")}</div>
+<div class="pipe">
+ <div class="pbox" id="b1"><b>Process name</b><span id="v1"></span></div>
+ <div class="pbox" id="b2"><b>Lowercase</b><span id="v2"></span></div>
+ <div class="pbox" id="b3"><b>FNV-1a 64-bit</b><span id="v3"></span></div>
+ <div class="pbox" id="b4"><b>XOR 0x5BAC903BA7D81967</b><span id="v4"></span></div>
+ <div class="pbox" id="b5"><b>In demo blocklist?</b><span id="v5"></span></div>
+</div>
+<div class="verdict" id="fv"></div>
+</div>
+<div class="panel"><h3>Demo blocklist (stored as hashes only)</h3><p class="hint">Modelled on names publicly reported in SUNBURST's real list.</p><pre class="term" id="blist" style="min-height:0"></pre></div>
+${nav()}`,
+async run(ep){ $("#blist").textContent=DEMO_BLOCK.map(p=>(fnv1a(p)^XORKEY).toString()).join("\n"); await fnvRun($("#pin").value,ep); },
+bind(){
+  $("#pgo").onclick=()=>fnvRun($("#pin").value,++epoch);
+  $$(".chips button").forEach(b=>b.onclick=()=>{$("#pin").value=b.dataset.p;fnvRun(b.dataset.p,++epoch)});
+}});
+async function fnvRun(name,ep){
+  name=(name||"").trim(); if(!name){$("#fv").className="verdict show bad";$("#fv").textContent="Type a process name to run the check.";return}
+  const ids=[1,2,3,4,5]; ids.forEach(i=>{$("#b"+i).className="pbox";$("#v"+i).textContent=""}); $("#fv").className="verdict";
+  const low=name.toLowerCase(), h=fnv1a(low), x=h^XORKEY, hit=DEMO_BLOCK.map(p=>(fnv1a(p)^XORKEY)).includes(x);
+  const vals=[name,low,hex64(h),x.toString(),hit?"Yes: match found":"No match"];
+  for(let i=0;i<5;i++){ if(!alive(ep))return; $("#b"+(i+1)).classList.add(i===4&&hit?"bad":"on"); await scramble($("#v"+(i+1)),vals[i],ep,i>1&&i<4?700:300); await wait(250); }
+  if(!alive(ep))return;
+  const v=$("#fv"); v.className="verdict show "+(hit?"bad":"ok");
+  v.textContent=hit?`"${name}" is a known analysis tool. SUNBURST would stay silent on this machine.`:`"${name}" is not on the list. SUNBURST would continue its checks.`;
+}
+
+/* 7. CAPA */
+const CAPS=[
+ ["encode data using Base64","data-manipulation/encoding/base64","T1027"],
+ ["decompress data using Deflate","data-manipulation/compression","T1140"],
+ ["hash data using FNV","data-manipulation/hashing/fnv","T1027"],
+ ["enumerate processes","host-interaction/process/list","T1057"],
+ ["query or enumerate registry value","host-interaction/registry","T1012"],
+ ["get hostname","host-interaction/os/hostname","T1082"],
+ ["resolve DNS","communication/dns","T1071"],
+ ["send HTTP request","communication/http/client","T1071.001"],
+ ["delay execution","anti-analysis","T1497.003"],
+ ["check for security software","anti-analysis","T1518.001"]];
+const MATRIX={"Initial access":[["T1195.002","Supply chain compromise",1]],
+ "Defense evasion":[["T1553.002","Code signing",1],["T1027","Obfuscated information"],["T1140","Decode information"],["T1497.003","Time-based evasion"],["T1562.001","Disable security tools"]],
+ "Discovery":[["T1082","System information"],["T1012","Query registry"],["T1057","Process discovery"],["T1518.001","Security software"]],
+ "Command and control":[["T1071","Application layer protocol"],["T1071.001","Web protocols"],["T1568.002","Domain generation",1]]};
+stages.push({name:"CAPA capabilities",
+narr:"CAPA matches the code against hundreds of behaviour rules. It finds encoding, compression, hashing, process and registry discovery, and web communication, and maps each one to MITRE ATT&CK.",
+view:()=>`
+<h2>CAPA: what can it do?</h2>
+<p class="lead">CAPA inspects every .NET method, matches it against its rule library, and maps each capability to MITRE ATT&amp;CK.</p>
+<div class="panel"><h3>Matching rules against methods</h3>
+<pre class="term" id="cterm" style="min-height:60px"></pre><div class="meter"><i id="cmeter"></i></div>
+<ul class="caps" id="caps"></ul></div>
+<div class="panel"><h3>MITRE ATT&amp;CK coverage</h3><p class="hint">Solid red: found by CAPA in this simulation. Dashed: established by DiE or published reports rather than a CAPA rule.</p>
+<div class="matrix" id="matrix">${Object.entries(MATRIX).map(([t,xs])=>`<div class="tactic"><h4>${t}</h4>${xs.map(x=>`<div class="tech ${x[2]?"ctx":""}" data-id="${x[0]}"><b>${x[0]}</b>${x[1]}</div>`).join("")}</div>`).join("")}</div>
+<div class="stats"><div class="counter"><span id="nc">0</span><small>capabilities (illustrative)</small></div><div class="counter" style="color:var(--bad)"><span id="nt">0</span><small>ATT&amp;CK techniques</small></div></div>
+</div>${nav()}`,
+async run(ep){
+  await typeLines($("#cterm"),[{t:"> capa -v "+FILE,c:"dim"},{t:"format: dotnet   arch: i386   os: windows",c:"good"}],ep);
+  const m=$("#cmeter"),ul=$("#caps"); ul.innerHTML=""; const on=new Set();
+  for(let i=0;i<CAPS.length;i++){ if(!alive(ep))return;
+    m.style.width=((i+1)/CAPS.length*100)+"%"; m.style.transition="width .35s";
+    const c=CAPS[i]; ul.insertAdjacentHTML("beforeend",`<li><span>${c[0]}</span><code>${c[1]}</code><span class="tag bad">${c[2]}</span></li>`);
+    const t=$(`.tech[data-id="${c[2]}"]`); if(t){t.classList.add("on");on.add(c[2])}
+    $("#nc").textContent=i+1; $("#nt").textContent=on.size; await wait(420);
+  }
+  for(const t of $$(".tech.ctx")){ if(!alive(ep))return; t.classList.add("on"); await wait(250); }
+  $("#nt").textContent=$$(".tech.on").length;
+}});
+
+/* 8. behaviour */
+const FLOW=[
+ ["Loaded by Orion?","Runs only inside the SolarWinds Orion service process.","FLOSS: Orion class names"],
+ ["Wait 12–14 days","Stays dormant after installation to avoid linking it to the update.","CAPA: delay execution"],
+ ["Real corporate network?","Needs a domain-joined machine that is not a SolarWinds test domain.","FLOSS: decoded config strings"],
+ ["Security tools running?","Hashes processes and services, compares with the hidden blocklist.","CAPA: hash data using FNV"],
+ ["Internet reachable?","Checks it can resolve api.solarwinds.com.","FLOSS: decoded host name"],
+ ["Beacon over DNS","Encodes a victim ID into a subdomain of avsvmcloud[.]com.","CAPA: resolve DNS"],
+ ["Selected by attackers?","The DNS reply decides whether to stop or continue.","Published reports"],
+ ["HTTP command channel","Traffic disguised as Orion Improvement Program data; accepts remote tasks.","CAPA: send HTTP request"]];
+const ENVS={victim:{label:"Victim Orion server",stop:-1},analyst:{label:"Analyst VM with Wireshark",stop:3},test:{label:"Offline test machine",stop:4},early:{label:"Just installed (day 1)",stop:1}};
+let envSel="victim";
+stages.push({name:"Behaviour simulation",
+narr:"Putting the static findings together, we can reconstruct what SUNBURST would do if it ran. Choose an environment: on a real victim server it reaches the attackers, but on an analyst's machine it silently gives up.",
+view:()=>`
+<h2>Reconstructed behaviour: what the code would do</h2>
+<p class="lead">Built from our static findings and public reports. Nothing is executed; this is a logical walk-through of the decision chain SUNBURST follows.</p>
+<div class="panel"><h3>Choose where the DLL is installed</h3>
+<div class="envpick">${Object.entries(ENVS).map(([k,v])=>`<button class="btn small" data-env="${k}" aria-pressed="${k===envSel}">${v.label}</button>`).join("")}</div>
+<ol class="flow" id="flow">${FLOW.map((f,i)=>`<li><span class="n">${i+1}</span><div><div class="t">${f[0]}</div><div class="d">${f[1]}</div></div><div class="ev">${f[2]}</div></li>`).join("")}</ol>
+<div class="verdict" id="bv"></div></div>${nav()}`,
+async run(ep){
+  const lis=$$("#flow li"), stop=ENVS[envSel].stop; lis.forEach(l=>l.className=""); $("#bv").className="verdict";
+  for(let i=0;i<lis.length;i++){ if(!alive(ep))return;
+    lis[i].classList.add("active"); lis[i].scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"}); await wait(700); if(!alive(ep))return;
+    lis[i].classList.remove("active");
+    if(i===stop){ lis[i].classList.add("stop"); for(let j=i+1;j<lis.length;j++)lis[j].classList.add("skip");
+      const v=$("#bv"); v.className="verdict show ok"; v.textContent=`Stopped at step ${i+1}: SUNBURST stays silent here, which is why sandboxes and analysts rarely saw it act.`; return; }
+    lis[i].classList.add("pass");
+  }
+  const v=$("#bv"); v.className="verdict show bad"; v.textContent="All checks passed: the attackers gain a hidden command channel into the victim's network.";
+},
+bind(){ $$("[data-env]").forEach(b=>b.onclick=()=>{envSel=b.dataset.env;$$("[data-env]").forEach(x=>x.setAttribute("aria-pressed",x===b));rerun()}); }
+});
+
+/* 9. integrity + IOCs */
+stages.push({name:"Integrity & IOCs",
+narr:"At the end we hash the file again. The two hashes are identical, so the evidence was not altered and remains admissible. We then publish indicators that defenders can search for.",
+view:()=>`
+<h2>Integrity check and indicators of compromise</h2>
+<p class="lead">Re-hashing after analysis proves the evidence is unchanged, which is essential for it to stand up in court.</p>
+<div class="grid2">
+<div class="panel"><h3>Before vs after</h3>
+<p style="margin:0 0 4px;color:var(--muted);font-size:.88rem">Before analysis (14:10)</p><div class="hash" id="hb">${SHA256}</div>
+<p style="margin:12px 0 4px;color:var(--muted);font-size:.88rem">After analysis</p><div class="hash" id="ha"></div>
+<p id="hv" style="margin:10px 0 0"></p></div>
+<div class="panel"><h3>IOCs for defenders</h3>
+<div class="tablewrap"><table><tbody id="iocs"></tbody></table></div>
+<button class="btn small" id="copy" style="margin-top:10px">Copy IOCs</button> <span id="copied" style="color:var(--muted);font-size:.85rem"></span></div>
+</div>${nav()}`,
+async run(ep){
+  const iocs=[["File name",FILE],["SHA-256",SHA256],["C2 domain","avsvmcloud[.]com"],["Backdoor class","OrionImprovementBusinessLayer"],["Code signer","SolarWinds Worldwide, LLC"],["Traffic disguise","Orion Improvement Program"]];
+  $("#iocs").innerHTML="";
+  await scramble($("#ha"),SHA256,ep,1500); if(!alive(ep))return;
+  const hb=$("#hb"),ha=$("#ha");
+  for(let k=8;k<=SHA256.length;k+=8){ if(!alive(ep))return;
+    const f=s=>`<span class="m">${s.slice(0,k)}</span>${s.slice(k)}`; hb.innerHTML=f(SHA256); ha.innerHTML=f(SHA256); await wait(120); }
+  $("#hv").innerHTML='<span class="tag ok">Identical</span> 64 of 64 characters match. Evidence integrity preserved.';
+  for(const r of iocs){ if(!alive(ep))return; $("#iocs").insertAdjacentHTML("beforeend",`<tr class="new"><th>${r[0]}</th><td><code>${r[1]}</code></td></tr>`); await wait(250); }
+},
+bind(){ $("#copy").onclick=async()=>{const t=$$("#iocs tr").map(r=>r.innerText.replace("\t",": ")).join("\n");try{await navigator.clipboard.writeText(t);$("#copied").textContent="Copied."}catch(e){$("#copied").textContent="Copy blocked by the browser; select the table instead."}}; }
+});
+
+/* 10. law */
+const LAWS=[
+ ["IT Act 2000, Section 43","Unauthorised access; introducing a computer contaminant."],
+ ["IT Act 2000, Section 66","Criminal offence for dishonest or fraudulent Section 43 acts."],
+ ["IT Act 2000, Section 66F","Cyber terrorism against government and critical systems."],
+ ["IT Act 2000, Section 70 and NCIIPC","Protected systems and critical information infrastructure."],
+ ["IT Act Section 43A and 2011 Security Practices Rules","Duty to maintain reasonable security, including vendor risk."],
+ ["CERT-In Directions, 28 April 2022 (Section 70B)","Report within 6 hours; retain logs for 180 days."],
+ ["Digital Personal Data Protection Act 2023","Notify the Board and affected people of personal-data breaches."],
+ ["Bharatiya Sakshya Adhiniyam 2023, Section 63","Admissibility of electronic evidence with a certificate."],
+ ["Bharatiya Nagarik Suraksha Sanhita 2023","Procedure for search, seizure and investigation."]];
+const FINDS=[
+ ["Backdoor planted through the vendor's build",[0,1]],
+ ["Government and critical infrastructure targeted",[2,3]],
+ ["Organisations ran unverified vendor code",[4]],
+ ["A significant cyber incident occurred",[5]],
+ ["Personal data may have been exposed",[6]],
+ ["Hashes and custody log preserved",[7,8]]];
+stages.push({name:"Indian law mapping",
+narr:"Each finding maps to Indian law. Planting the backdoor is an offence under the IT Act, targeting critical systems engages Section 66F, affected organisations must report to CERT-In within six hours, and our matching hashes support admissibility under the Bharatiya Sakshya Adhiniyam.",
+view:()=>`
+<h2>From findings to Indian law</h2>
+<p class="lead">Select a finding to see which provisions it engages.</p>
+<div class="panel map">
+<div><h3>Findings</h3>${FINDS.map((f,i)=>`<button class="find" data-f="${i}" aria-pressed="false">${f[0]}</button>`).join("")}</div>
+<div><h3>Provisions</h3>${LAWS.map((l,i)=>`<div class="law" data-l="${i}"><strong>${l[0]}</strong><span>${l[1]}</span></div>`).join("")}</div>
+</div>${nav()}`,
+async run(ep){ for(let i=0;i<FINDS.length;i++){ if(!alive(ep))return; pickFind(i); await wait(1500); } if(alive(ep)){pickFind(-1)} },
+bind(){ $$(".find").forEach(b=>b.onclick=()=>{epoch++;pickFind(+b.dataset.f)}); }
+});
+function pickFind(i){
+  $$(".find").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.f===i));
+  const set=i<0?null:new Set(FINDS[i][1]);
+  $$(".law").forEach(l=>{const k=+l.dataset.l; l.classList.toggle("on",!!set&&set.has(k)); l.classList.toggle("dim",!!set&&!set.has(k))});
+}
+
+/* 11. conclusion */
+const QA=[
+ ["What kind of file is it?","A signed, unpacked .NET DLL posing as a genuine SolarWinds Orion component.","Detect It Easy"],
+ ["What is it hiding?","Its C2 domain, registry paths and queries, compressed with Deflate and Base64-encoded.","FLOSS + our decoder"],
+ ["What can it do?","Discover processes, registry and host details; communicate over DNS and HTTP.","CAPA"],
+ ["How does it evade detection?","Code signing, 12–14 day dormancy, and a hashed blocklist of security tools.","DiE + CAPA + FNV check"],
+ ["Was the evidence preserved?","Yes. SHA-256 identical before and after analysis; custody log complete.","Get-FileHash"],
+ ["Which laws apply?","IT Act Sections 43, 66, 66F, 70; CERT-In Directions 2022; DPDP Act 2023; BSA 2023 Section 63.","Legal mapping"]];
+stages.push({name:"Conclusion",
+narr:"In conclusion, three static analysis tools revealed a signed, disguised backdoor with hidden configuration, security-tool evasion and covert communication, all without running a single line of it.",
+view:()=>`
+<h2>Investigation findings</h2>
+<p class="lead">Static analysis answered every investigation question without executing the malware.</p>
+<div class="panel"><ul class="qa" id="qa">${QA.map(q=>`<li><span class="ck">✓</span><div><div class="q">${q[0]}</div><div class="a">${q[1]} <span class="tag ok">${q[2]}</span></div></div></li>`).join("")}</ul></div>
+<div class="panel"><h3>Recommendations</h3><p style="margin:0">Verify the integrity of vendor build pipelines, require a software bill of materials (SBOM), monitor outbound DNS for unusual subdomains, and keep a CERT-In reporting plan ready so incidents can be reported within 6 hours.</p></div>
+${nav()}`,
+async run(ep){ for(const li of $$("#qa li")){ if(!alive(ep))return; li.classList.add("on"); await wait(700);} }
+});
+
+/* ================= engine ================= */
+let current=0, playing=false, captions=false; const visited=new Set();
+function renderRail(){
+  $("#rail").innerHTML=stages.map((s,i)=>`<li><button class="step ${visited.has(i)&&i!==current?"done":""}" data-i="${i}" ${i===current?'aria-current="step"':""}><span class="tent">${i+1}</span>${s.name}</button></li>`).join("");
+  $$(".step").forEach(b=>b.onclick=()=>{stopPlay();go(+b.dataset.i)});
+}
+function setCaption(){
+  const c=$("#caption"); c.classList.toggle("show",captions);
+  $("#capN").textContent=(current+1)+"/"+stages.length; $("#capT").textContent=stages[current].narr;
+}
+function go(i){
+  if(i<0||i>=stages.length) return Promise.resolve();
+  current=i; visited.add(i); const ep=++epoch;
+  const st=$("#stage"); st.classList.remove("stage-in"); st.innerHTML=stages[i].view(); void st.offsetWidth; st.classList.add("stage-in");
+  $$("[data-go]").forEach(b=>b.onclick=()=>{stopPlay();go(current+(+b.dataset.go))});
+  renderRail(); setCaption(); $("#prog").style.width=((i+1)/stages.length*100)+"%";
+  if(stages[i].bind) stages[i].bind();
+  window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+  return stages[i].run?stages[i].run(ep):Promise.resolve();
+}
+function rerun(){ const ep=++epoch; const st=stages[current]; $("#stage").innerHTML=st.view(); $$("[data-go]").forEach(b=>b.onclick=()=>{stopPlay();go(current+(+b.dataset.go))}); if(st.bind)st.bind(); return st.run?st.run(ep):null; }
+function stopPlay(){ playing=false; $("#play").textContent="Play walkthrough"; }
+$("#play").onclick=async()=>{
+  if(playing){stopPlay();return}
+  playing=true; $("#play").textContent="Stop walkthrough";
+  if(!captions){captions=true;$("#capBtn").setAttribute("aria-pressed","true");}
+  for(let i=current===stages.length-1?0:current;i<stages.length&&playing;i++){
+    await go(i); if(!playing)break; await wait(3500);
+  }
+  stopPlay();
+};
+$("#capBtn").onclick=()=>{captions=!captions;$("#capBtn").setAttribute("aria-pressed",captions);setCaption()};
+$("#presBtn").onclick=()=>{const on=document.body.classList.toggle("present");$("#presBtn").setAttribute("aria-pressed",on);
+  if(on&&document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  if(!on&&document.fullscreenElement) document.exitFullscreen().catch(()=>{});};
+$("#theme").onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark";try{localStorage.setItem("sb-theme",r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem("sb-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea"))return;
+  if(e.key==="ArrowRight"){stopPlay();go(current+1)}
+  else if(e.key==="ArrowLeft"){stopPlay();go(current-1)}
+  else if(e.key==="p"||e.key==="P")$("#play").click();
+  else if(e.key==="c"||e.key==="C")$("#capBtn").click();
+});
+go(0);
+</script>
+</body>
+</html>

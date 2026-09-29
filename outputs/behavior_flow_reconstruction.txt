@@ -1,0 +1,35 @@
+# SUNBURST Execution Flow Simulation (Environment: Victim Orion Enterprise Server)
+
+Step 1: Loaded by Orion? [PASSED]
+  Description: Runs only inside SolarWinds Orion service process (SolarWinds.BusinessLayerHost.exe).
+  Evidence:    FLOSS: Orion class names
+
+Step 2: Wait 12–14 days [PASSED]
+  Description: Stays dormant post-installation to sever correlation with update deployment.
+  Evidence:    CAPA: delay execution (T1497.003)
+
+Step 3: Real corporate network? [PASSED]
+  Description: Requires domain-joined host that is not a vendor testing or sandbox domain.
+  Evidence:    FLOSS: decoded config strings
+
+Step 4: Security tools running? [PASSED]
+  Description: Hashes active processes/services with FNV-1a 64-bit; checks XORed blacklist.
+  Evidence:    CAPA: hash data using FNV / Impair Defenses
+
+Step 5: Internet reachable? [PASSED]
+  Description: Verifies resolution of benign canary host (api.solarwinds.com).
+  Evidence:    FLOSS: decoded host name
+
+Step 6: Beacon over DNS [PASSED]
+  Description: Encodes victim GUID + domain into dynamic subdomains of avsvmcloud.com.
+  Evidence:    CAPA: resolve DNS (T1071.004)
+
+Step 7: Selected by attackers? [PASSED]
+  Description: DNS CNAME or IPv4 reply instructs backdoor to sleep, abort, or activate stage 2.
+  Evidence:    CISA Advisory / Incident Reports
+
+Step 8: HTTP command channel [PASSED]
+  Description: C2 sessions disguised as Orion Improvement Program; accepts secondary memory payloads.
+  Evidence:    CAPA: send HTTP request (T1071.001)
+
+FINAL VERDICT: All checks passed: Attackers establish persistent C2 channel via avsvmcloud[.]com.

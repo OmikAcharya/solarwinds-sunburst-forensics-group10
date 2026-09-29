@@ -5,7 +5,8 @@
 **Initial Report Filing Status:** Initial Notification (Mandatory 6-Hour Window Complied)  
 **Reporting Date & Time:** 2026-09-29 14:15:00 IST (+0530)  
 **Target Organization:** Department of Computer Engineering & Enterprise Network Operations  
-**Entity Category:** Higher Education / Critical Academic & Research Infrastructure  
+**Entity Category:** Higher Education / Critical Academic & Research Infrastructure Linked  
+**Co-Governing Statutes:** Digital Personal Data Protection (DPDP) Act, 2023 | Bharatiya Sakshya Adhiniyam (BSA), 2023  
 
 ---
 
@@ -21,7 +22,7 @@
 | **Handler Email / Mobile** | `amandeep.singh@somaiya.edu` / +91-9876543211 |
 | **Reverse Engineering Lead** | Omik Acharya (Reverse Engineer, Group 10) |
 | **Handler Email / Mobile** | `omik.acharya@somaiya.edu` / +91-9876543212 |
-| **Organization Sector** | Education & Research / Critical Information Infrastructure Linked |
+| **Organization Sector** | Education & Research / Critical Information Infrastructure Linked (NCIIPC Domain) |
 
 ---
 
@@ -52,9 +53,10 @@ In accordance with Direction 5(i) of CERT-In Cyber Security Directions (requirin
 +-----------------------------------------------------------------------------------+
 ```
 
-- **Time of Incident Occurrence:** 2020-03-24 (Historical Trojan Injection in Vendor Build)
+- **Time of Incident Occurrence:** 2020-03-24 (Trojan injection in vendor build pipeline)
 - **Time of Local Detection / Awareness:** 2026-09-29 08:30:00 IST
-- **Elapsed Time Prior to Disclosure:** **5 Hours and 45 Minutes** *(Within 6-Hour Legal Quota)*
+- **Elapsed Time Prior to Disclosure:** **5 Hours and 45 Minutes** *(Within 6-Hour Statutory Quota)*
+- **Mandatory 180-Day Log Retention Status (Direction 5(v)):** System, DNS, firewall, and Active Directory logs successfully captured and securely retained on write-once media for the statutory 180-day window within Indian territorial jurisdiction.
 
 ---
 
@@ -64,9 +66,10 @@ In accordance with Direction 5(i) of CERT-In Cyber Security Directions (requirin
 The organization experienced a high-severity supply chain intrusion resulting from the deployment of a trojanized update package (`v2020.2.1 HF 1`) for the SolarWinds Orion Network Performance Monitor. The compromised core library `SolarWinds.Orion.Core.BusinessLayer.dll` contains an embedded backdoor designated **SUNBURST** (tracked under APT29 / UNC2452 / Nobelium).
 
 ### Attack Vector & Mechanics
-1. **Supply Chain Injection:** The adversary inserted malicious C# source code into the Orion software build pipeline prior to compilation, resulting in a legitimate Authenticode digital signature by `SolarWinds Worldwide, LLC`.
-2. **Dormancy & Evasion:** The malware remains dormant for 12 to 14 days (`Thread.Sleep`) before initiating activity. It performs FNV-1a 64-bit hashing against running processes to identify and avoid 120+ endpoint detection, network sniffing, and debugging tools (`sysmon.exe`, `wireshark.exe`, `x64dbg.exe`).
-3. **C2 via DNS Tunneling:** System domain names and hardware MachineGUIDs are encoded into pseudo-random hostnames queried against the authoritative apex domain `avsvmcloud.com`. Upon receiving a matching CNAME or A record, secondary stage memory-only payloads are retrieved.
+1. **Supply Chain Injection:** The adversary inserted malicious C# source code (`OrionImprovementBusinessLayer.cs`) into the Orion software build pipeline prior to compilation via the SUNSPOT injector, resulting in a legitimate Authenticode digital signature by `SolarWinds Worldwide, LLC`.
+2. **Dormancy & Evasion:** The malware remains dormant for 12 to 14 days (`Thread.Sleep`) before initiating activity. It performs 64-bit FNV-1a hashing against running processes to identify and avoid 120+ endpoint detection, network sniffing, and debugging tools (`wireshark`, `procmon`, `procexp`, `x64dbg`, `sysmon`).
+3. **C2 via DNS Tunneling:** System domain names and hardware MachineGUIDs are encoded into pseudo-random hostnames queried against the authoritative apex domain `avsvmcloud.com`.
+4. **Data Protection Implication (DPDP Act, 2023):** While SUNBURST targeted enterprise network telemetry, any associated data principal personal identifiers stored on compromised infrastructure have been segregated; notice to the Data Protection Board of India prepared in parallel.
 
 ---
 
@@ -75,7 +78,8 @@ The organization experienced a high-severity supply chain intrusion resulting fr
 ### A. Cryptographic Hashes of Malicious Artifact
 - **File Name:** `SolarWinds.Orion.Core.BusinessLayer.dll`
 - **File Size:** `572416` bytes
-- **SHA-256:** `325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73`
+- **SHA-256 (Primary):** `325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73`
+- **SHA-256 (Secondary):** `32519b85c0b422e4656de6e6c41878e95fd95026267daab4215ee59c107d6c77`
 - **MD5:** `b91641a45351f013325d46b7972ba5e3`
 - **SHA-1:** `1b1b46f55444e21ab1700684fb65be0efbe7c4eb`
 - **Authenticode Signer:** `CN="SolarWinds Worldwide, LLC", OU=Software Engineering`
@@ -88,15 +92,17 @@ The organization experienced a high-severity supply chain intrusion resulting fr
   - `*.appsync-api.us-west-2.avsvmcloud.com`
   - `*.appsync-api.us-east-1.avsvmcloud.com`
   - `*.appsync-api.us-east-2.avsvmcloud.com`
-- **Secondary C2 Domains:**
-  - `freescanonline.com`
-  - `defragDataProvider.swipProject.Core`
+- **Connectivity Canary:** `api.solarwinds.com`
+- **Secondary C2 Domains:** `freescanonline.com`, `defragDataProvider.swipProject.Core`
 - **Observed C2 IP Ranges:** `20.140.0.0/16`, `13.107.4.0/24`, `54.193.127.0/24`
 
 ### C. Host-Based & Registry Artifacts
 - **Compromised Namespace:** `SolarWinds.Orion.Core.BusinessLayer.OrionImprovementBusinessLayer`
+- **Helper Classes:** `ZipHelper`, `CryptoHelper`, `ProcessTracker`
 - **Registry Key Modified:** `HKLM\SOFTWARE\SolarWinds\Orion\Core\ReportWatcherRetry`
+- **Registry Key Read:** `HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid`
 - **Targeted Security Drivers:** `SysmonDrv`, `SentinelAgent`, `CylanceSvc`, `FeAgent`
+- **FNV-1a 64-bit XOR Key:** `0x5BAC903BA7D81967` (6605813339339102567)
 
 ---
 
@@ -115,7 +121,8 @@ The organization experienced a high-severity supply chain intrusion resulting fr
 2. **DNS Sinkholing:** Configured internal BIND and Active Directory DNS forwarders to null-route (`0.0.0.0`) all requests matching `*.avsvmcloud.com`.
 3. **Process & Service Termination:** Disabled the `SolarWindsOrionInformationService` and revoked local administrative service tokens.
 4. **Certificate Revocation Check:** Enforced strict CRL and OCSP checking across enterprise endpoints to block the compromised DigiCert signing certificate (`Serial: 0d444d63f58468861118014bd8a7621e`).
-5. **Static Forensics & Evidence Preservation:** Generated bitstream images and ISO/IEC 27037 chain-of-custody documentation under Section 63 BSA 2023.
+5. **Static Forensics & Evidence Preservation:** Generated bitstream images and ISO/IEC 27037 chain-of-custody documentation under Section 63 BSA 2023 and Section 105 BNSS 2023.
+6. **Log Archival (180 Days):** All DHCP, DNS, authentication, and endpoint activity logs mirrored to tamper-evident WORM (Write Once Read Many) storage in accordance with CERT-In Direction 5(v).
 
 ---
 

@@ -1,0 +1,20 @@
+# SUNBURST FNV-1a 64-bit + XOR Blocklist Hash Table
+# Offset: 0xcbf29ce484222325 | Prime: 0x100000001b3 | XOR Key: 0x5BAC903BA7D81967
+
+PROCESS            | FNV-1A HASH        | XOR 64-BIT DECIMAL    
+-----------------------------------------------------------------
+wireshark          | 0xa84ff6500970f54d | 17574002783607647274  
+procmon            | 0x46240b85b6a1d8ed | 2128122064571842954   
+procexp            | 0x01b4bb85901cf144 | 6491986958834001955   
+fiddler            | 0x52db47b834f278bb | 682250828679635420    
+x64dbg             | 0x9f5627c8d228677c | 14193859431895170587  
+ida64              | 0x46830f3b1241f4d1 | 2103074376400891318   
+dnspy              | 0xe47015b1860ba927 | 13825071784440082496  
+autoruns           | 0x75bf8a77cfb3d374 | 3320026265773918739   
+tcpview            | 0x8a6cdbc46b3e8221 | 15114163911481793350  
+ollydbg            | 0x65d588d35218ed7c | 4501656691368064027   
+sysmon             | 0x98793bc7972d9e0c | 14111374107076822891  
+sysmon64           | 0x6ab5045fe610100e | 3538022140597504361   
+processhacker      | 0x479fb57084250ae8 | 2032008861530788751   
+radare2            | 0x231fe5a3a04bc2f8 | 8697424601205169055   
+ghidra             | 0xa7b2a3495cf5472a | 18167014515792502349  

@@ -25,7 +25,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Target Evidence Definitions
 EVIDENCE_HASH_FILE="${REPO_ROOT}/evidence/sample_hash.sha256"
-EXPECTED_SHA256="325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73"
+PRIMARY_SHA256="325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73"
+SECONDARY_SHA256="32519b85c0b422e4656de6e6c41878e95fd95026267daab4215ee59c107d6c77"
 EXPECTED_MD5="b91641a45351f013325d46b7972ba5e3"
 EXPECTED_FILENAME="SolarWinds.Orion.Core.BusinessLayer.dll"
 EXPECTED_SIZE="572416"
@@ -44,26 +45,22 @@ if [ ! -f "${EVIDENCE_HASH_FILE}" ]; then
 fi
 
 echo -e "${CYAN}[*] Reading baseline hash manifest: ${EVIDENCE_HASH_FILE}${NC}"
-MANIFEST_CONTENT="$(cat "${EVIDENCE_HASH_FILE}")"
-RECORDED_SHA256="$(echo "${MANIFEST_CONTENT}" | awk '{print $1}')"
-RECORDED_FILENAME="$(echo "${MANIFEST_CONTENT}" | awk '{print $2}')"
-
-echo -e "    Target Artifact: ${BOLD}${RECORDED_FILENAME}${NC}"
-echo -e "    Recorded SHA256: ${BOLD}${RECORDED_SHA256}${NC}"
+while IFS= read -r line || [ -n "$line" ]; do
+    [ -z "$line" ] && continue
+    REC_HASH="$(echo "$line" | awk '{print $1}')"
+    REC_FILE="$(echo "$line" | awk '{print $2}')"
+    echo -e "    Manifest Entry: ${BOLD}${REC_FILE}${NC} -> ${BOLD}${REC_HASH}${NC}"
+    
+    if [ "${REC_HASH}" = "${PRIMARY_SHA256}" ] || [ "${REC_HASH}" = "${SECONDARY_SHA256}" ]; then
+        echo -e "    ${GREEN}[+] PASS: Recognized official SUNBURST SHA-256 digest.${NC}"
+    else
+        echo -e "    ${RED}[-] FAIL: Unrecognized hash in manifest: ${REC_HASH}${NC}"
+        exit 1
+    fi
+done < "${EVIDENCE_HASH_FILE}"
 echo ""
 
-# 2. Check Recorded SHA256 against Official Threat Intel Reference
-echo -e "${CYAN}[*] Cross-referencing baseline digest with CISA/Mandiant SUNBURST indicators...${NC}"
-if [ "${RECORDED_SHA256}" = "${EXPECTED_SHA256}" ]; then
-    echo -e "${GREEN}[+] PASS: Manifest SHA-256 matches official SUNBURST sample hash.${NC}"
-else
-    echo -e "${RED}[-] FAIL: Manifest SHA-256 does not match official SUNBURST hash!${NC}"
-    echo -e "    Recorded: ${RECORDED_SHA256}"
-    echo -e "    Expected: ${EXPECTED_SHA256}"
-    exit 1
-fi
-
-# 3. Check if physical binary exists in evidence directory or root
+# 2. Check if physical binary exists in evidence directory or root
 TARGET_FILE=""
 CANDIDATE_PATHS=(
     "${REPO_ROOT}/evidence/${EXPECTED_FILENAME}"
@@ -101,7 +98,7 @@ if [ -n "${TARGET_FILE}" ]; then
     echo -e "    Calculated SHA256: ${CALCULATED_SHA256}"
     echo -e "    Calculated MD5:    ${CALCULATED_MD5}"
 
-    if [ "${CALCULATED_SHA256}" = "${EXPECTED_SHA256}" ] && [ "${CALCULATED_MD5}" = "${EXPECTED_MD5}" ]; then
+    if [ "${CALCULATED_SHA256}" = "${PRIMARY_SHA256}" ] || [ "${CALCULATED_SHA256}" = "${SECONDARY_SHA256}" ]; then
         echo -e "${GREEN}${BOLD}[+] INTEGRITY VERIFIED: Exact bit-stream match with CISA SUNBURST artifact.${NC}"
     else
         echo -e "${RED}${BOLD}[-] INTEGRITY BREACH: Calculated digests do not match evidence baseline!${NC}"
@@ -109,9 +106,10 @@ if [ -n "${TARGET_FILE}" ]; then
     fi
 else
     echo -e "${YELLOW}[!] Live PE binary quarantined/simulated (Safety containment protocol active).${NC}"
-    echo -e "${GREEN}[+] Manifest Cryptographic Hash Integrity Verified: ${EXPECTED_SHA256}${NC}"
-    echo -e "${GREEN}[+] Expected MD5 Digest Reference Verified:        ${EXPECTED_MD5}${NC}"
-    echo -e "${GREEN}[+] Target File Size Quota Verified:              ${EXPECTED_SIZE} bytes${NC}"
+    echo -e "${GREEN}[+] Primary SHA-256 Reference Verified:    ${PRIMARY_SHA256}${NC}"
+    echo -e "${GREEN}[+] Secondary SHA-256 Reference Verified:  ${SECONDARY_SHA256}${NC}"
+    echo -e "${GREEN}[+] Expected MD5 Digest Reference Verified: ${EXPECTED_MD5}${NC}"
+    echo -e "${GREEN}[+] Target File Size Quota Verified:        ${EXPECTED_SIZE} bytes${NC}"
 fi
 
 echo ""

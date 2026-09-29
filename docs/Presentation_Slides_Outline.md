@@ -5,6 +5,7 @@
 **Somaiya Vidyavihar University, Mumbai, Maharashtra**  
 **Course:** Digital Forensics & Cyber Security Laboratory (Capstone Project - 20 Marks)  
 **Academic Year:** 2026–2027 | TY B.Tech COMP | Group 10  
+**Interactive Simulation Model:** [`docs/sunburst_simulation.html`](sunburst_simulation.html)
 
 ---
 
@@ -15,44 +16,48 @@
 - **Presenter:** Group 10
   - **Amandeep Singh** (Roll No: 16010123036) — Lead Investigator (PE Architecture & DiE Triage)
   - **Omik Acharya** (Roll No: 16010123218) — Reverse Engineer (FLOSS Deobfuscation & CAPA Attribution)
-  - **Om Lanke** (Roll No: 16010123216) — Cyber Legal Auditor (IT Act, CERT-In, BSA 2023 Compliance)
+  - **Om Lanke** (Roll No: 16010123216) — Cyber Legal Auditor (IT Act, CERT-In, BSA 2023, DPDP 2023, BNSS 2023)
 - **Course & Session:** Digital Forensics & Cyber Security Laboratory (DFCS) | Academic Year 2026–2027
 - **Visuals:** Institutional Crest of Somaiya Vidyavihar University, DFCS Laboratory Insignia, Project Metadata Box.
 
 ---
 
-## SLIDE 2: CASE OVERVIEW & SUPPLY CHAIN ATTACK VECTOR
+## SLIDE 2: CASE OVERVIEW, 15-MONTH CHRONOLOGY & ATTACK VECTOR
 - **Speaker:** Amandeep Singh
 - **Title:** The Anatomy of a Supply Chain Attack: Threat Actor UNC2452 / APT29
 - **Key Concepts & Technical Points:**
-  - Traditional vs. Supply Chain Attacks: Bypassing hardened perimeter firewalls by compromising trusted software vendors.
-  - The SolarWinds Orion Platform: Centralized network monitoring suite executing with high-privilege domain service accounts.
-  - The Infiltration Vector: Adversaries compromised SolarWinds' internal build environment (Bamboo CI/CD), deploying the **SUNSPOT** injection engine.
-  - On-The-Fly Trojanization: Injection of malicious C# source (`OrionImprovementBusinessLayer.cs`) during the MSBuild compilation pass without modifying static source control repositories.
-  - Downstream Exposure: Approximately 18,000 global commercial, defense, and governmental organizations received the trojanized update package (`v2020.2.1 HF 1`).
-- **Visuals:** Flow diagram showing: Threat Actor -> Build Server Compromise -> Automated MSBuild Hook -> Legitimate DigiCert Code-Signing -> Global Client Updates.
+  - The SolarWinds Orion Platform: Centralized enterprise network monitoring software executing with elevated SYSTEM privileges.
+  - The 15-Month Chronology:
+    - *Sep 2019:* Initial network intrusion by adversaries.
+    - *Oct 2019:* Harmless POC test code injected into build system.
+    - *Feb 2020:* SUNBURST injected into production builds via the memory-only SUNSPOT dropper.
+    - *Mar–Jun 2020:* Trojanized update (`v2020.2.1 HF 1`) distributed to 18,000 organizations.
+    - *Dec 2020:* FireEye breach disclosure; CISA Emergency Directive 21-01 issued.
+  - The Targeting Funnel: 18,000 organizations ingested the backdoor; ~100 high-value targets selected for stage-2 interactive operations.
+  - Software Supply Chain Compromise (MITRE ATT&CK T1195.002): Source-swapping at build time allowed the trojan to receive a genuine corporate digital signature.
+- **Visuals:** Timeline slider showing 15-month progression; supply chain animation flow diagram from build server to signed update to victim organizations.
 
 ---
 
 ## SLIDE 3: EVIDENCE ACQUISITION & CRYPTOGRAPHIC CHAIN OF CUSTODY
 - **Speaker:** Amandeep Singh
-- **Title:** ISO/IEC 27037:2012 Evidence Preservation & Integrity Baseline
+- **Title:** ISO/IEC 27037:2012 & BNSS 2023 Evidence Preservation
 - **Key Concepts & Technical Points:**
   - Forensic Item ID: `EVD-2020-SW-001` (`SolarWinds.Orion.Core.BusinessLayer.dll`)
-  - Physical & Environmental Safeguards: Air-gapped workstation KJSSE-DFIR-WS01; Tableau T8u USB 3.0 hardware write-blocker; LUKS2 AES-256 encrypted container.
+  - Physical & Environmental Controls: Air-gapped workstation KJSSE-DFIR-WS01; Tableau T8u USB 3.0 hardware write-blocker; LUKS2 AES-256 encrypted container.
   - Cryptographic Fingerprints (NIST FIPS 180-4):
-    - SHA-256: `325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73`
+    - SHA-256 (Primary): `325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73`
+    - SHA-256 (Secondary): `32519b85c0b422e4656de6e6c41878e95fd95026267daab4215ee59c107d6c77`
     - MD5: `b91641a45351f013325d46b7972ba5e3`
-    - SHA-1: `1b1b46f55444e21ab1700684fb65be0efbe7c4eb`
     - File Size: `572416` bytes (559.00 KiB)
-  - Zero Hash Drift: Checksums re-verified before triage, post-disassembly, and at court preservation.
-- **Visuals:** Evidence custody chronology timeline (Vault -> Amandeep -> Omik -> Om Lanke -> Secure Archival) with green checkmark verification badges.
+  - Zero Hash Discrepancy: SHA-256 before triage (`hb`) identical to SHA-256 post-triage (`ha`) (64/64 hex characters match).
+- **Visuals:** Hash matching terminal meter; chronological chain-of-custody transfer log from vault to workstation checkout.
 
 ---
 
 ## SLIDE 4: PE ARCHITECTURE & DETECT IT EASY (DiE) TRIAGE
 - **Speaker:** Amandeep Singh
-- **Title:** Deep PE32 Inspection: Header Analysis & Entropy Profiling
+- **Title:** Header Inspection, Entropy Profiling & Signature Verification
 - **Key Concepts & Technical Points:**
   - PE Format: PE32 console DLL compiled for Intel 80386 (Machine ID: `0x014c`).
   - .NET CLR Environment: Runtime `v4.0.30319`, flag `COMIMAGE_FLAGS_ILONLY` (Managed MSIL assembly).
@@ -61,97 +66,107 @@
     - `.text`: 6.21 (Unpacked standard executable code)
     - `.rsrc`: 7.14 (High entropy due to compressed manifests and localized resources)
     - `.reloc`: 0.11 (Minimal relocation records)
-  - The Evasion Strategy: Absence of packers (UPX/Themida). Attackers maintained benign entropy to bypass heuristic AV scanners.
+  - Absence of Packers: Entropy curve remains strictly below the 7.5 packed threshold, ensuring the binary mimics benign software.
   - Authenticode Digital Signature: Valid certificate issued by DigiCert to `SolarWinds Worldwide, LLC` (Serial: `0d 44 4d 63 f5 84 68 86 11 18 01 4b d8 a7 62 1e`).
-- **Visuals:** DiE v3.10 CLI output snippet alongside an entropy bar chart comparing benign vs. packed software.
+- **Visuals:** DiE v3.10 interface snippet alongside the file section map and entropy curve.
 
 ---
 
-## SLIDE 5: STATIC STRING DEOBFUSCATION WITH MANDIANT FLOSS
+## SLIDE 5: DEOBFUSCATING PROTECTED STRINGS WITH FLOSS & RAW DEFLATE
 - **Speaker:** Omik Acharya
-- **Title:** Cracking Backdoor Cryptography: 346 Deobfuscated Strings
+- **Title:** Cracking Backdoor Cryptography: 2,146 Strings & Raw Deflate Decompression
 - **Key Concepts & Technical Points:**
-  - Obfuscation Routine: Custom byte subtraction, bitwise XOR, and Deflate decompression inside `OrionImprovementBusinessLayer.Zip`.
-  - Automated Extraction: Mandiant FLOSS v3.1.1 parsed static, stack, and dynamically decoded strings.
-  - The 120+ Process Blacklist: Malware computes 64-bit FNV-1a hashes of running processes:
-    - Forensics/Debuggers: `sysmon.exe`, `wireshark.exe`, `processhacker.exe`, `x64dbg.exe`, `windbg.exe`, `ghidra.exe`.
-    - EDR / AV Agents: `SentinelAgent.exe`, `CSFalconService.exe`, `taniumclient.exe`, `CylanceSvc.exe`.
-  - Target Registry Paths: `HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid` (system fingerprinting) and `ReportWatcherRetry` (backdoor status flag).
-  - Command & Control Tokens: Apex domain `avsvmcloud.com` and regional multi-cloud DGA domains.
-- **Visuals:** Terminal window showing FLOSS extraction output, categorized by Blacklisted Processes, Registry Paths, and C2 URLs.
+  - FLOSS Analysis: Extracted 2,146 static strings; flagged suspicious classes: `OrionImprovementBusinessLayer`, `ZipHelper`, `DeflateStream`.
+  - Cryptographic Obfuscation Scheme: Raw Deflate compression followed by Base64 encoding.
+  - Decompressed Core Indicators:
+    - `SywrLstNzskvTdFLzs8FAA==` $\rightarrow$ **`avsvmcloud.com`** (C2 Domain Apex)
+    - `C/Z3Cwl3...` $\rightarrow$ **`SOFTWARE\Microsoft\Cryptography`** (Registry Key)
+    - `801MzsjMS3UvzUwBAA==` $\rightarrow$ **`MachineGuid`** (Victim Fingerprint)
+    - `C07NSU0...` $\rightarrow$ **`Select * From Win32_NetworkAdapterConfiguration`** (WMI Query)
+    - `SyzI1Cv...` $\rightarrow$ **`api.solarwinds.com`** (Connectivity Canary)
+- **Visuals:** Two-column table mapping Base64 ciphertext payloads to decompressed plaintext configuration parameters.
 
 ---
 
-## SLIDE 6: BEHAVIORAL ATTRIBUTION WITH MANDIANT CAPA
+## SLIDE 6: THE HIDDEN DEFENSE EVASION BLOCKLIST: FNV-1a 64-BIT + XOR
 - **Speaker:** Omik Acharya
-- **Title:** Automated Malware Capability Attribution & Execution Logic
+- **Title:** Process Hashing Evasion: Eliminating Plaintext Strings
 - **Key Concepts & Technical Points:**
-  - Tool Rationale: Mandiant CAPA v7.0.1 detects malicious capabilities using semantic YAML rules without runtime execution.
-  - Flagship Capability 1: Time-Based Sandbox Evasion (T1497.003)
-    - Hardcoded `Thread.Sleep` dormant window of 288 hours (**12 full days**), with random jitter up to **14 days**.
-    - Purpose: Exhaust automated malware analysis sandboxes which timeout in 5–10 minutes.
-  - Flagship Capability 2: DNS Tunneling C2 (T1071.004)
-    - DGA generates subdomains structured as: `<encoded_guid>.<encoded_domain>.appsync-api.eu-west-1.avsvmcloud.com`.
-    - Low-and-slow DNS requests evade standard web proxies and egress packet inspections.
-  - Flagship Capability 3: Defensive Process Termination (T1562.001)
-    - Disables logging and aborts C2 beaconing if forensic or security monitoring processes are active.
-- **Visuals:** CAPA capability tree breakdown highlighting `delay execution`, `check for security software`, and `resolve dynamic C2 domain`.
+  - Evasion Rationale: Plaintext process strings trigger AV/EDR detection; SUNBURST embedded zero plaintext tool names.
+  - The Hashing Pipeline:
+    $$\text{Hash} = \text{FNV1a}_{64}(\text{lowercase}(\text{process\_name})) \oplus \text{0x5BAC903BA7D81967}$$
+  - Offset Basis: `0xcbf29ce484222325` | Prime: `0x100000001b3` | XOR Key: `0x5BAC903BA7D81967` (6605813339339102567).
+  - Target Examples:
+    - `wireshark` $\rightarrow$ FNV: `0xa84ff6500970f54d` $\rightarrow$ XOR: `17574002783607647274`
+    - `procmon` $\rightarrow$ FNV: `0x46240b85b6a1d8ed` $\rightarrow$ XOR: `2128122064571842954`
+    - `x64dbg` $\rightarrow$ FNV: `0x9f5627c8d228677c` $\rightarrow$ XOR: `14193859431895170587`
+  - Operational Result: Over 120 analysis and security tools matched; if found, the backdoor permanently mutes itself.
+- **Visuals:** Interactive hashing pipeline box diagram showing string $\rightarrow$ lowercase $\rightarrow$ FNV-1a $\rightarrow$ XOR key $\rightarrow$ blacklist match.
 
 ---
 
-## SLIDE 7: MITRE ATT&CK ENTERPRISE MATRIX MAPPING
+## SLIDE 7: CAPABILITY ATTRIBUTION WITH CAPA & THE 8-STEP DECISION GATE
 - **Speaker:** Omik Acharya
-- **Title:** Comprehensive Threat Actor TTP Matrix (UNC2452 / APT29)
+- **Title:** MITRE ATT&CK Mapping & Environmental Flow Simulation
 - **Key Concepts & Technical Points:**
-  - Initial Access: T1195.002 (Supply Chain Compromise)
-  - Execution: T1059 / T1129 (Shared Modules via `SolarWinds.BusinessLayerHost.exe`)
-  - Persistence: T1574.002 (DLL Side-Loading / Trojanized Component)
-  - Defense Evasion: T1497.003 (Time-based Evasion), T1562.001 (Impair Defenses), T1027 (Obfuscated Strings), T1553.002 (Subvert Code Signing)
-  - Discovery: T1082 (System Information Discovery), T1057 (Process Discovery), T1016 (Network Configuration)
-  - Command & Control: T1071.004 (DNS Protocol), T1568.002 (Domain Generation Algorithms)
-- **Visuals:** Color-coded MITRE ATT&CK Matrix grid showing tactics across the top and highlighted technical IDs mapped to evidence artifacts.
+  - Flagship CAPA Capabilities:
+    - T1497.003: Time-Based Sandbox Evasion (12 to 14 days `Thread.Sleep` delay).
+    - T1071.004: Application Layer Protocol: DNS Tunneling via `avsvmcloud.com`.
+    - T1562.001: Impair Defenses (Process enumeration and termination).
+  - The 8-Step Reconstructed Decision Gate:
+    1. Loaded by Orion? | 2. Wait 12–14 days | 3. Real corporate domain? | 4. Security tools running? | 5. Internet reachable? | 6. Beacon over DNS | 7. Selected by attackers? | 8. HTTP command channel.
+  - Environmental Outcomes:
+    - Analyst VM: Aborts at Step 4 (Wireshark detected).
+    - Offline Machine: Aborts at Step 5 (No internet).
+    - Victim Orion Server: Passes all 8 steps $\rightarrow$ persistent command channel.
+- **Visuals:** Vertical flow diagram of the 8 decision steps with pass/fail branch icons; CAPA MITRE ATT&CK capability matrix.
 
 ---
 
 ## SLIDE 8: INDIAN CYBER LAW COMPLIANCE & CERT-In MANDATES
 - **Speaker:** Om Lanke
-- **Title:** Statutory Violations: Information Technology Act, 2000 & CERT-In Directions 2022
+- **Title:** Statutory Violations: IT Act 2000, CERT-In Directions 2022 & DPDP Act 2023
 - **Key Concepts & Technical Points:**
-  - IT Act Section 43: Unauthorized access, data extraction, and contamination of computer systems (Civil damages).
-  - IT Act Section 66: Dishonest and fraudulent hacking (Imprisonment up to 3 years / fine up to 5 lakh rupees).
-  - IT Act Section 66F: **Cyber Terrorism** (Attacks targeting critical infrastructure, essential services, or national sovereignty; **Statutory Penalty: Imprisonment for Life**).
-  - IT Act Section 70: Tampering with declared Protected Systems (Imprisonment up to 10 years).
-  - CERT-In Directions 2022 (Section 70B): Mandatory reporting of supply chain compromises and data security incidents within **6 hours** of detection.
-  - Group 10 Compliance: Official CERT-In Incident Notification submitted in 5 hours 45 minutes.
-- **Visuals:** Legal summary table comparing IT Act sections, offenses, statutory penalties, and forensic mappings; CERT-In 6-hour timeline countdown clock.
+  - IT Act Section 43: Introducing computer contaminants, data extraction (Civil compensation).
+  - IT Act Section 66: Dishonest and fraudulent hacking (Imprisonment up to 3 years).
+  - IT Act Section 66F: **Cyber Terrorism** (Targeting critical infrastructure or sovereignty; **Statutory Penalty: Imprisonment for Life**).
+  - IT Act Section 70: Tampering with protected critical systems (Up to 10 years imprisonment).
+  - IT Act Section 43A & 2011 Rules: Duty of corporate entities to maintain reasonable security against vendor supply chain risks.
+  - CERT-In Directions 2022 (Section 70B): Mandatory reporting of supply chain compromises within **6 hours**; log retention for **180 days**.
+  - DPDP Act 2023: Mandatory breach notification to the Data Protection Board of India.
+- **Visuals:** Legal mapping matrix linking technical malware findings to Indian statutory sections and criminal/civil liabilities.
 
 ---
 
-## SLIDE 9: ADMISSIBILITY OF ELECTRONIC EVIDENCE: SECTION 63 BSA 2023
+## SLIDE 9: ADMISSIBILITY OF ELECTRONIC EVIDENCE: SECTION 63 BSA 2023 & BNSS 2023
 - **Speaker:** Om Lanke
-- **Title:** Transition from Section 65B (IEA 1872) to Section 63 BSA 2023
+- **Title:** Procedural Transition: Section 65B (IEA 1872) to Section 63 (BSA 2023)
 - **Key Concepts & Technical Points:**
   - Repeal of Indian Evidence Act, 1872 by the Bharatiya Sakshya Adhiniyam, 2023 (Act No. 47 of 2023).
-  - Mandatory Conditions under Section 63(2):
-    1. Regular lawful custody and processing of electronic records.
-    2. Data fed into system in the ordinary course of business.
-    3. Proper operational status of computer without memory or storage distortion.
-    4. Exact reproduction of the digital output from original bitstream image.
-  - Dual-Signatory Certification Framework under Section 63(4):
-    - **Part A (Custodian Affirmation):** Executed by Amandeep Singh (Workstation hardware serial, MAC address, write-block integrity).
-    - **Part B (Forensic Expert Certificate):** Executed by Omik Acharya & Om Lanke (FIPS 180-4 hash matching, tool validation, non-tampering).
-  - Automated Generation: Demonstrated via Python script `generate_bsa_cert.py`.
-- **Visuals:** Architectural side-by-side comparison of Section 65B IEA vs. Section 63 BSA, displaying the executed Part A and Part B certificate stamps.
+  - Mandatory Conditions under Section 63(2): Regular custody, normal feeding of records, proper operational status without distortion, exact reproduction.
+  - Dual-Signatory Certification under Section 63(4) BSA 2023 & Section 105 BNSS 2023:
+    - **Part A (Custodian Affirmation):** Executed by Amandeep Singh (Workstation hardware telemetry, MAC address, write-block verification).
+    - **Part B (Forensic Expert Technical Certificate):** Executed by Omik Acharya & Om Lanke (NIST FIPS 180-4 hash matching, tool validation, non-tampering).
+  - Admissibility: Deemed primary electronic evidence admissible in court without original physical server hardware.
+- **Visuals:** Architectural comparison graphic of Section 65B vs. Section 63; certificate layout showing Part A and Part B seals.
 
 ---
 
-## SLIDE 10: ENTERPRISE REMEDIATION ARCHITECTURE & CONCLUSION
+## SLIDE 10: THREE-TIERED REMEDIATION & THE SIX INQUIRIES
 - **Speaker:** Om Lanke
-- **Title:** Three-Tiered Supply Chain Defense Architecture & Final Takeaways
+- **Title:** Enterprise Defense Architecture & Concluding Findings
 - **Key Concepts & Technical Points:**
-  - Tier 1: Hermetic Build Pipelines (SLSA Level 4) & In-toto Cryptographic Attestations.
-  - Tier 2: FIPS 140-2 Level 3 Hardware Security Modules (HSM) for Code Signing with Two-Person Quorum Approvals.
-  - Tier 3: Zero Trust Network Egress & Protective DNS (DNS Response Policy Zones blocking newly registered/DGA domains).
-  - Investigation Summary: Complete static triage executed, 346 strings deobfuscated, 14 ATT&CK techniques classified, and electronic evidence fully certified under Indian law.
-  - Academic Evaluator Acknowledgments & Capstone Sign-off.
-- **Visuals:** Three-tiered defense pyramid diagram; Group 10 final sign-off banner; Open for Q&A prompt.
+  - Answers to the Six Core Forensic Inquiries:
+    1. *What kind of file?* Signed, unpacked .NET DLL posing as legitimate Orion component.
+    2. *What is it hiding?* C2 apex `avsvmcloud.com` and registry paths in Deflate+Base64.
+    3. *What can it do?* Host profiling, process enumeration, DNS/HTTP C2 tunneling.
+    4. *How does it evade detection?* Code signing, 12-14d delay, FNV-1a hashed blacklist.
+    5. *Was evidence preserved?* Yes. 64/64 SHA-256 characters matched identically.
+    6. *Which laws apply?* IT Act Sec 43/66/66F/70; CERT-In 2022; DPDP 2023; BSA 2023 Sec 63.
+  - Three-Tiered Defense Model:
+    - *Tier 1:* Hermetic Build Environments (SLSA Level 4) & In-toto Attestations.
+    - *Tier 2:* FIPS 140-2 Level 3 HSM Code Signing with Two-Person Quorum Verification.
+    - *Tier 3:* Zero Trust Network Egress & DNS Response Policy Zones (RPZ).
+  - Interactive Simulation: Accessible locally at [`docs/sunburst_simulation.html`](sunburst_simulation.html).
+  - Capstone Defense Sign-off & Open for Q&A.
+- **Visuals:** Three-tiered defense pyramid; Group 10 closing sign-off banner; link to interactive simulation.
