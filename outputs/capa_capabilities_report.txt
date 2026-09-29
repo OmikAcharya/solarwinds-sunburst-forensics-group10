@@ -1,0 +1,139 @@
+capa v7.0.1
+Target: SolarWinds.Orion.Core.BusinessLayer.dll
+Format: pe
+Arch:   i386
+OS:     windows
+Path:   SolarWinds.Orion.Core.BusinessLayer.dll
+MD5:    b91641a45351f013325d46b7972ba5e3
+SHA1:   1b1b46f55444e21ab1700684fb65be0efbe7c4eb
+SHA256: 325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73
+
+================================================================================
+MITRE ATT&CK TACTICS & TECHNIQUES MAPPING
+================================================================================
+TACTIC                  TECHNIQUE                                                   ID
+----------------------------------------------------------------------------------------------------
+Defense Evasion         Virtualization/Sandbox Evasion: Time Based Evasion          T1497.003
+                        Impair Defenses: Disable or Modify Tools                    T1562.001
+                        Obfuscated Files or Information: Obfuscated Strings         T1027
+                        Obfuscated Files or Information: Indicator Removal          T1070.004
+                        Modify Registry                                             T1112
+                        Masquerading: Match Legitimate Name or Location             T1036.005
+                        Subvert Trust Controls: Code Signing                        T1553.002
+Discovery               System Information Discovery                                T1082
+                        Process Discovery                                           T1057
+                        System Network Configuration Discovery                      T1016
+                        Query Registry                                              T1012
+                        System Time Discovery                                       T1124
+Command and Control     Application Layer Protocol: DNS                             T1071.004
+                        Application Layer Protocol: Web Protocols                   T1071.001
+                        Dynamic Resolution: Domain Generation Algorithms            T1568.002
+                        Data Encoding: Standard Cryptographic Encoding              T1132.001
+Execution               Command and Scripting Interpreter                           T1059
+                        Shared Modules                                              T1129
+Persistence             Hijack Execution Flow: DLL Side-Loading                     T1574.002
+                        Supply Chain Compromise: Compromise Software Dependencies   T1195.002
+
+================================================================================
+MALWARE BEHAVIOR CATALOG (MBC) OBJECTIVE MAPPING
+================================================================================
+MBC OBJECTIVE           MBC BEHAVIOR                                                ID
+----------------------------------------------------------------------------------------------------
+Anti-Behavioral Analysis  Dynamic Analysis Evasion: Delay Execution                  B0003.003
+                          Debugger Detection: Process Enumeration                   B0001.001
+                          Host Evasion: Hardware / Environment Query                B0004
+Communication           C2 Communication: Domain Name System (DNS) Tunneling        C0012
+                        C2 Communication: HTTP / HTTPS Command Channel              C0002
+Discovery               Host Information Discovery: Query System Info               B0027
+                        Process Discovery: Enumerate Processes                      B0043
+Defense Evasion         Obfuscation: Deobfuscate String Data                        E1027.m01
+                        Security Tool Evasion: Blacklist Process Search             E1562
+
+================================================================================
+DETAILED CAPABILITY BREAKDOWN & MATCHED RULES
+================================================================================
+
+[+] delay execution (sleep 12-14 days dormant period)
+    namespace: anti-analysis/time-delay
+    scope:     function @ 0x060012a4 (OrionImprovementBusinessLayer.Delay)
+    matches:
+      - API: System.Threading.Thread::Sleep(int32)
+      - Constant: 288 hours (minimum 12 days = 1,036,800,000 ms)
+      - Pseudo-random jitter addition: 0 to 48 hours (up to 14 days total)
+    att&ck:    T1497.003 (Time Based Evasion)
+    mbc:       B0003.003 (Delay Execution)
+
+[+] check for security software / anti-virus via process hash blacklist
+    namespace: anti-analysis/anti-av
+    scope:     function @ 0x060012b0 (OrionImprovementBusinessLayer.CheckProcesses)
+    matches:
+      - API: System.Diagnostics.Process::GetProcesses()
+      - API: System.Diagnostics.Process::get_ProcessName()
+      - Algorithm: FNV-1a 64-bit hashing of normalized process strings
+      - Blacklist Comparison: Matched against 120+ precomputed 64-bit hashes
+      - Targeted Tools: Sysmon, Wireshark, Process Hacker, x64dbg, Tanium, SentinelOne, CrowdStrike
+    att&ck:    T1562.001 (Impair Defenses)
+    mbc:       E1562 (Security Tool Evasion)
+
+[+] encode data using custom string obfuscation routine
+    namespace: data-manipulation/encoding/obfuscated-string
+    scope:     function @ 0x060012c8 (OrionImprovementBusinessLayer.Zip)
+    matches:
+      - Custom algorithm: Byte subtraction, bitwise XOR, Deflate compression
+      - Reference: Table-driven deobfuscation array (300+ strings decoded at runtime)
+    att&ck:    T1027 (Obfuscated Files or Information)
+    mbc:       E1027.m01 (Deobfuscate String Data)
+
+[+] resolve dynamic C2 domain via DGA (Domain Generation Algorithm)
+    namespace: communication/c2/dns
+    scope:     function @ 0x06001302 (OrionImprovementBusinessLayer.GetDgaDomain)
+    matches:
+      - Base domain reference: "avsvmcloud.com"
+      - Regional prefix selectors: appsync-api.eu-west-1, appsync-api.us-west-2
+      - Data encoding: MachineGuid + Network Domain hash encoded into DNS labels
+      - API: System.Net.Dns::GetHostEntry(string)
+    att&ck:    T1071.004 (DNS), T1568.002 (Domain Generation Algorithms)
+    mbc:       C0012 (DNS Tunneling)
+
+[+] query system configuration and network properties
+    namespace: discovery/system-info
+    scope:     function @ 0x06001320 (OrionImprovementBusinessLayer.GetSystemInfo)
+    matches:
+      - API: System.Net.NetworkInformation.IPGlobalProperties::GetIPGlobalProperties()
+      - API: System.Net.NetworkInformation.IPGlobalProperties::get_DomainName()
+      - API: System.Net.NetworkInformation.NetworkInterface::GetAllNetworkInterfaces()
+      - Registry Read: HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid
+      - Registry Read: HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain
+    att&ck:    T1082 (System Information Discovery), T1016 (Network Configuration)
+    mbc:       B0027 (Host Information Discovery)
+
+[+] communicate via HTTP POST / GET web protocol
+    namespace: communication/c2/http
+    scope:     function @ 0x06001344 (OrionImprovementBusinessLayer.HttpSend)
+    matches:
+      - API: System.Net.HttpWebRequest::Create(string)
+      - API: System.Net.HttpWebRequest::set_Method("POST")
+      - API: System.Net.HttpWebRequest::set_UserAgent(string)
+      - Headers: If-None-Match, Content-Type: application/octet-stream
+    att&ck:    T1071.001 (Web Protocols)
+    mbc:       C0002 (HTTP / HTTPS Command Channel)
+
+[+] modify system registry settings
+    namespace: persistence/registry
+    scope:     function @ 0x06001360 (OrionImprovementBusinessLayer.SetRegistryState)
+    matches:
+      - API: Microsoft.Win32.Registry::SetValue(string, string, object)
+      - Target Key: HKLM\SOFTWARE\SolarWinds\Orion\Core\ReportWatcherRetry
+    att&ck:    T1112 (Modify Registry)
+
+================================================================================
+CAPA ANALYSIS SUMMARY
+================================================================================
+Binary Classification:  Trojan / Backdoor / Advanced Persistent Threat (APT)
+Attribution Context:    UNC2452 / APT29 / Nobelium (SolarWinds Supply Chain Intrusion)
+Total ATT&CK Matches:   14 techniques across 5 tactics
+Total MBC Matches:      9 objectives
+Evasion Capability:     CRITICAL (12-14 day delay + 120+ process hash comparisons)
+C2 Capability:          STEALTHY (DNS A/CNAME record exfiltration via avsvmcloud[.]com)
+Code Signing Status:    Valid digital certificate present (Subverted Trust Controls)
+Analysis Verdict:       CONFIRMED HIGH-SEVERITY SUPPLY CHAIN BACKDOOR

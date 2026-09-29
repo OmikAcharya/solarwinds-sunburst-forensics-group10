@@ -1,0 +1,80 @@
+{
+  "case_metadata": {
+    "case_reference": "KJSSE/COMP/DFCS/2026-27/GRP10",
+    "case_title": "SUNBURST Supply Chain Malware Static Forensic Triage & Admissibility Analysis",
+    "investigating_agency": "Department of Computer Engineering, KJ Somaiya School of Engineering",
+    "institutional_affiliation": "Somaiya Vidyavihar University, Mumbai, Maharashtra, India",
+    "laboratory": "Digital Forensics & Cyber Security Laboratory (Lab 402)",
+    "academic_session": "2026-2027",
+    "investigation_date": "2026-09-29T10:00:00Z",
+    "primary_investigators": [
+      {
+        "name": "Amandeep Singh",
+        "roll_number": "16010123036",
+        "role": "Lead Investigator (PE Architecture & DiE Triage)"
+      },
+      {
+        "name": "Omik Acharya",
+        "roll_number": "16010123218",
+        "role": "Reverse Engineer (FLOSS Deobfuscation & CAPA Attribution)"
+      },
+      {
+        "name": "Om Lanke",
+        "roll_number": "16010123216",
+        "role": "Cyber Legal Auditor (IT Act, CERT-In, BSA 2023 Compliance)"
+      }
+    ]
+  },
+  "artifact_metadata": {
+    "artifact_id": "EVD-2020-SW-001",
+    "file_name": "SolarWinds.Orion.Core.BusinessLayer.dll",
+    "original_path": "%PROGRAMFILES%\\SolarWinds\\Orion\\SolarWinds.Orion.Core.BusinessLayer.dll",
+    "file_size_bytes": 572416,
+    "file_format": "PE32 executable (DLL) (console) Intel 80386 Mono/.Net assembly, for MS Windows",
+    "target_clr_framework": ".NET Framework v4.0.30319",
+    "compilation_timestamp_utc": "2020-03-24 10:53:22 UTC",
+    "hashes": {
+      "md5": "b91641a45351f013325d46b7972ba5e3",
+      "sha1": "1b1b46f55444e21ab1700684fb65be0efbe7c4eb",
+      "sha256": "325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73",
+      "ssdeep": "12288:7B0aW0kPzY3N1+4+d9aXm6F/k8L2nJ41qO3p7z:7B0aW0kPzY3N1+4+d9aXm6F/k8L2nJ41q",
+      "imphash": "dae02f32a21e03ce65412f6e56942daa"
+    },
+    "authenticode_signature": {
+      "signed": true,
+      "signer_identity": "SolarWinds Worldwide, LLC",
+      "signer_dn": "CN=SolarWinds Worldwide, LLC, OU=Software Engineering, O=SolarWinds Worldwide, LLC, L=Austin, S=Texas, C=US",
+      "issuer": "DigiCert SHA2 Assured ID Code Signing CA",
+      "issuer_dn": "CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US",
+      "serial_number": "0d 44 4d 63 f5 84 68 86 11 18 01 4b d8 a7 62 1e",
+      "valid_from": "2018-11-07 00:00:00 UTC",
+      "valid_to": "2021-11-07 12:00:00 UTC",
+      "signing_time": "2020-03-24 11:34:00 UTC",
+      "signature_digest_algorithm": "SHA-256 with RSA",
+      "revocation_status": "Revoked post-disclosure (2020-12-14)"
+    },
+    "threat_intelligence": {
+      "malware_family": "SUNBURST (aka Solorigate)",
+      "threat_actor": "UNC2452 / APT29 / Nobelium / Cozy Bear",
+      "attack_type": "Software Supply Chain Compromise (MITRE ATT&CK T1195.002)",
+      "injection_vector": "Trojanized MSBuild source modification prior to assembly compilation",
+      "dormancy_window": "12 to 14 days delay prior to active command execution",
+      "primary_c2_dga_apex": "avsvmcloud.com",
+      "malicious_class": "SolarWinds.Orion.Core.BusinessLayer.OrionImprovementBusinessLayer",
+      "malicious_methods": [
+        "Initialize()",
+        "Update()",
+        "Check()",
+        "Delay()",
+        "GetHash()"
+      ]
+    },
+    "forensic_acquisition": {
+      "acquisition_standard": "ISO/IEC 27037:2012 (Guidelines for identification, collection, acquisition, and preservation of digital evidence)",
+      "analysis_standard": "ISO/IEC 27042:2015 (Guidelines for the analysis and interpretation of digital evidence)",
+      "write_blocker": "Tableau T8u Forensic USB 3.0 Bridge (Hardware Write-Block)",
+      "workstation_os": "Forensic Workstation (Ubuntu 22.04 LTS / macOS Darwin)",
+      "custody_verification": "Cryptographic bit-stream hash equality validated at ingress and egress"
+    }
+  }
+}

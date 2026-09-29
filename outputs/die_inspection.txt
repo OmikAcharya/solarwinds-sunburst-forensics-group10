@@ -1,0 +1,99 @@
+Detect It Easy v3.10 (CLI Mode)
+File: SolarWinds.Orion.Core.BusinessLayer.dll
+Target Size: 572416 bytes (559.00 KiB)
+Mode: Deep Scan / Entropy Calculation / Signature Verification
+
+--------------------------------------------------------------------------------
+[+] FILE IDENTIFICATION & ARCHITECTURE
+--------------------------------------------------------------------------------
+Format:                 PE32 (Portable Executable 32-bit)
+Target OS:              Microsoft Windows
+Subsystem:              Windows GUI / Console (Subsystem ID: 2)
+Linker Version:         14.0 (Microsoft Visual Studio 2019 / MSVC)
+File Header Machine:    0x014c (Intel 80386 - i386)
+Characteristics:        0x2102 (EXECUTABLE_IMAGE | 32BIT_MACHINE | DLL)
+Time Date Stamp:        0x5E79E892 (Tue Mar 24 10:53:22 2020 UTC)
+Entry Point RVA:        0x00085446
+Image Base:             0x10000000
+Section Alignment:      0x00002000
+File Alignment:         0x00000200
+Size of Image:          0x00090000
+Size of Headers:        0x00000400
+CheckSum:               0x00091AC3
+
+--------------------------------------------------------------------------------
+[+] .NET CLR METADATA HEADER (COMIMAGE_FLAGS)
+--------------------------------------------------------------------------------
+CLR Runtime:            v4.0.30319
+CLR Header Size:        0x00000048
+CLR Major/Minor:        2.5
+Flags:                  0x00000001 (COMIMAGE_FLAGS_ILONLY)
+EntryPointToken:        0x00000000 (Native DLL / Managed Library)
+StrongNameSignature:    RVA: 0x00085450, Size: 0x00000080
+Metadata Header RVA:    0x00002084, Size: 0x000412A8
+Streams Present:
+  #~        (RVA: 0x000020E8, Size: 0x000282E0) - Metadata Tables
+  #Strings  (RVA: 0x0002A3C8, Size: 0x0001221C) - Identifier Strings
+  #US       (RVA: 0x0003C5E4, Size: 0x00005C80) - User Strings
+  #GUID     (RVA: 0x00042264, Size: 0x00000010) - Module MVID GUID
+  #Blob     (RVA: 0x00042274, Size: 0x000010B8) - Signature / Blob Data
+
+Compiler / Toolchain Identified:
+  [+] Microsoft Roslyn C# Compiler (v3.x / .NET Framework 4.8 compatible)
+  [+] Obfuscator Detected: None (Native MSIL preserved, custom internal string obfuscation routine)
+
+--------------------------------------------------------------------------------
+[+] AUTHENTICODE DIGITAL SIGNATURE
+--------------------------------------------------------------------------------
+Security Directory:     RVA: 0x0008B200, Size: 0x00001718
+Certificate Status:     Signed (Valid Authenticode structure at distribution)
+Signer:                 CN="SolarWinds Worldwide, LLC", OU=Software Engineering, O="SolarWinds Worldwide, LLC", L=Austin, S=Texas, C=US
+Issuer:                 CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US
+Certificate Serial:     0d 44 4d 63 f5 84 68 86 11 18 01 4b d8 a7 62 1e
+Digest Algorithm:       SHA-256 (OID: 2.16.840.1.101.3.4.2.1)
+Encryption Algorithm:   RSA (2048 bits)
+Signing Timestamp:      Tue Mar 24 11:34:00 2020 UTC
+Timestamp Authority:    DigiCert SHA2 Assured ID Timestamping CA
+Signature Verification: INTEGRITY VALIDATED (Valid digital certificate embedded during automated build pipeline injection)
+
+--------------------------------------------------------------------------------
+[+] PE SECTION HEADERS & ENTROPY SCAN
+--------------------------------------------------------------------------------
+Number of Sections: 3
+Overall File Entropy: 6.32194 (Normal / Unpacked Executable)
+
+Section 1: .text
+  Virtual Address:    0x00002000
+  Virtual Size:       0x0008544C (545868 bytes)
+  Raw Data Offset:    0x00000400
+  Raw Data Size:      0x00085600 (546304 bytes)
+  Entropy:            6.21482
+  Status:             Normal executable code & MSIL instructions
+  Characteristics:    0x60000020 (IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ)
+
+Section 2: .rsrc
+  Virtual Address:    0x00088000
+  Virtual Size:       0x00005A30 (23088 bytes)
+  Raw Data Offset:    0x00085A00
+  Raw Data Size:      0x00005C00 (23552 bytes)
+  Entropy:            7.14238
+  Status:             High Entropy (Standard embedded version resources and manifest blobs)
+  Characteristics:    0x40000040 (IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ)
+
+Section 3: .reloc
+  Virtual Address:    0x0008E000
+  Virtual Size:       0x0000000C (12 bytes)
+  Raw Data Offset:    0x0008B600
+  Raw Data Size:      0x00000200 (512 bytes)
+  Entropy:            0.11320
+  Status:             Minimal relocations (Base relocation table for .NET MSIL entry stub)
+  Characteristics:    0x42000040 (IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_DISCARDABLE | IMAGE_SCN_MEM_READ)
+
+--------------------------------------------------------------------------------
+[+] TRIAGE SUMMARY
+--------------------------------------------------------------------------------
+Verdict:                Suspicious Dual-Purpose Binary (Legitimate Orion Library containing injected trojan class)
+Injected Namespace:     SolarWinds.Orion.Core.BusinessLayer.OrionImprovementBusinessLayer
+Packer:                 Not Packed (Standard MSIL, evasion achieved through code hiding and internal cryptographic obfuscation)
+Authenticode:           Legitimate Signature intact (Classic Supply Chain Attack Indicator)
+Entropy Profile:        .text (6.21) [OK], .rsrc (7.14) [OK], .reloc (0.11) [OK]

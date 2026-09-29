@@ -1,0 +1,7 @@
+floss>=3.1.1
+flare-capa>=7.0.1
+pefile>=2023.2.7
+pytest>=7.4.0
+tabulate>=0.9.0
+rich>=13.7.0
+colorama>=0.4.6
