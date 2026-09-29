@@ -14,6 +14,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
 
@@ -30,14 +31,46 @@ chmod +x scripts/run_forensics.py
 chmod +x scripts/generate_bsa_cert.py
 echo -e "${GREEN}[+] Scripts marked executable.${NC}"
 
-# 2. Virtual Environment & Dependency Installation
+# 2. Python Version Detection (Requires Python >= 3.10 for match/case pattern matching in vivisect)
+PYTHON_BIN=""
+CANDIDATES=(
+    "python3.12"
+    "python3.11"
+    "python3.10"
+    "/usr/local/bin/python3.11"
+    "/opt/homebrew/bin/python3.11"
+    "/opt/homebrew/bin/python3.10"
+    "python3"
+)
+
+for cand in "${CANDIDATES[@]}"; do
+    if command -v "$cand" >/dev/null 2>&1; then
+        ver=$("$cand" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || true)
+        major=$(echo "$ver" | cut -d. -f1)
+        minor=$(echo "$ver" | cut -d. -f2)
+        if [ -n "$major" ] && [ -n "$minor" ]; then
+            if [ "$major" -eq 3 ] && [ "$minor" -ge 10 ]; then
+                PYTHON_BIN="$cand"
+                echo -e "${GREEN}[+] Selected Python ${ver} ($cand) [Supports PEP 634 pattern matching]${NC}"
+                break
+            fi
+        fi
+    fi
+done
+
+if [ -z "$PYTHON_BIN" ]; then
+    PYTHON_BIN="python3"
+    echo -e "${YELLOW}[!] WARNING: Python >= 3.10 not found. Falling back to default 'python3'.${NC}"
+fi
+
+# 3. Virtual Environment & Dependency Installation
 VENV_DIR=".venv"
 
 if command -v uv >/dev/null 2>&1; then
     echo -e "${CYAN}[*] Fast package manager 'uv' detected.${NC}"
     if [ ! -d "${VENV_DIR}" ]; then
-        echo -e "${CYAN}[*] Creating virtual environment via uv in ${VENV_DIR}...${NC}"
-        uv venv "${VENV_DIR}"
+        echo -e "${CYAN}[*] Creating virtual environment via uv with ${PYTHON_BIN}...${NC}"
+        uv venv --python "${PYTHON_BIN}" "${VENV_DIR}"
         echo -e "${GREEN}[+] Virtual environment initialized with uv.${NC}"
     fi
     # shellcheck source=/dev/null
@@ -47,8 +80,8 @@ if command -v uv >/dev/null 2>&1; then
     echo -e "${GREEN}[+] Dependencies installed via uv.${NC}"
 else
     if [ ! -d "${VENV_DIR}" ]; then
-        echo -e "${CYAN}[*] Creating Python virtual environment in ${VENV_DIR}...${NC}"
-        python3 -m venv "${VENV_DIR}"
+        echo -e "${CYAN}[*] Creating virtual environment using ${PYTHON_BIN} in ${VENV_DIR}...${NC}"
+        "${PYTHON_BIN}" -m venv "${VENV_DIR}"
         echo -e "${GREEN}[+] Virtual environment initialized.${NC}"
     else
         echo -e "${YELLOW}[!] Existing virtual environment found at ${VENV_DIR}.${NC}"
@@ -61,12 +94,12 @@ else
     echo -e "${GREEN}[+] Dependencies installed successfully.${NC}"
 fi
 
-# 3. Verify Cryptographic Integrity
+# 4. Verify Cryptographic Integrity
 echo ""
 echo -e "${CYAN}[*] Executing initial cryptographic baseline validation...${NC}"
 bash scripts/verify_hashes.sh
 
-# 4. Run Pytest Suite
+# 5. Run Pytest Suite
 echo ""
 echo -e "${CYAN}[*] Running forensic pipeline verification tests...${NC}"
 pytest tests/ -v
