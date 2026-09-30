@@ -2,7 +2,7 @@
 ### [Admissibility of Electronic Records in Judicial, Inquisitorial, and Statutory Proceedings]
 **Reference No:** CERT-BSA-2026-GRP10-001  
 **Case File:** KJSSE/COMP/DFCS/2026-27/GRP10  
-**Date of Certification:** 29 September 2026  
+**Date of Certification:** 30 September 2026  
 **Jurisdiction:** Mumbai, Maharashtra, Republic of India  
 **Governing Statutory Regime:**  
 - Section 63(4)(c) of the Bharatiya Sakshya Adhiniyam, 2023 (Act No. 47 of 2023) [Repealing and Superseding Section 65B of the Indian Evidence Act, 1872]  
@@ -48,13 +48,13 @@ Now, therefore, this joint statutory certificate is issued in two solemn parts:
 
 In compliance with Section 63(2)(a)-(c) of the BSA 2023, the computer systems and optical/magnetic storage devices used during the collection, hashing, and analysis operated regularly, lawfully, and in an uncompromised condition:
 
-- **Analysis Hostname:** `macs-MacBook-Pro.local` (`1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa`)
-- **Operating Environment:** `Darwin 24.6.0 (x86_64)`
-- **Host MAC Address:** `ac:de:48:00:11:22`
-- **Processor Architecture:** `i386`
-- **Execution Runtime:** `Python 3.9.6 / Air-Gapped Static Container`
+- **Analysis Hostname:** `Amandeeps-MacBook-Air.local` (`1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa`)
+- **Operating Environment:** `Darwin 27.0.0 (arm64)`
+- **Host MAC Address:** `df:ef:71:d0:cf:85`
+- **Processor Architecture:** `arm`
+- **Execution Runtime:** `Python 3.10.21 / Air-Gapped Static Container`
 - **Write-Block Protection:** Hardware-level / Container-isolated Write-Block Enforced (ISO/IEC 27037:2012)
-- **Timestamp of Audit:** `2026-09-29 17:43:35 UTC`
+- **Timestamp of Audit:** `2026-09-30 17:28:54 UTC`
 
 ---
 
@@ -63,7 +63,7 @@ In compliance with Section 63(2)(a)-(c) of the BSA 2023, the computer systems an
 
 I, **Amandeep Singh**, Roll No: **16010123036**, residing in Mumbai, Maharashtra, serving as **Lead Investigator & Evidence Custodian** in the Department of Computer Engineering, KJ Somaiya School of Engineering, do hereby solemnly affirm, depose, and state on oath as under:
 
-1. That I have been in lawful management, physical charge, and operational custody of the digital forensic repository and workstation `macs-MacBook-Pro.local` during the acquisition and triage of the evidence artifact `SolarWinds.Orion.Core.BusinessLayer.dll`.
+1. That I have been in lawful management, physical charge, and operational custody of the digital forensic repository and workstation `Amandeeps-MacBook-Air.local` during the acquisition and triage of the evidence artifact `SolarWinds.Orion.Core.BusinessLayer.dll`.
 2. That throughout the material period, the computer system and attached storage devices were operating properly, and there were no operational defects, memory corruptions, or unauthorized interventions affecting the accuracy of the record.
 3. That the electronic record was reproduced from original bitstream forensic images maintained under ISO/IEC 27037 standards, and its cryptographic integrity remained verified before and after analysis (64/64 SHA-256 characters matching).
 4. That in conformity with the BNSS 2023 mandates for electronic evidence handling, the chain of custody has been meticulously documented and physically locked.
@@ -75,7 +75,7 @@ Roll No:     16010123036
 Designation: Lead Investigator & Evidence Custodian
 Department:  Computer Engineering, KJ Somaiya School of Engineering
 Signature:   _________________________________________
-Date:        29 September 2026
+Date:        30 September 2026
 Place:       Mumbai, Maharashtra, India
 ```
 
@@ -103,14 +103,14 @@ Name:        Omik Acharya
 Roll No:     16010123218
 Designation: Reverse Engineer & Static Analysis Lead
 Signature:   _________________________________________
-Date:        29 September 2026
+Date:        30 September 2026
 
 Countersigned by Cyber Legal Auditor:
 Name:        Om Lanke
 Roll No:     16010123216
 Designation: Cyber Legal Auditor & Compliance Officer
 Signature:   _________________________________________
-Date:        29 September 2026
+Date:        30 September 2026
 Place:       Mumbai, Maharashtra, India
 ```
 
