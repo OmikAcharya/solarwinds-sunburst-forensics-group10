@@ -85,3 +85,4 @@ cover/
 *.vmem
 *.pcap
 *.pcapng
+scratch/

@@ -213,9 +213,22 @@ class TestDocumentationDeliverables:
         ("scripts/verify_hashes.sh", 500),
         ("scripts/generate_bsa_cert.py", 1000),
         ("scripts/run_forensics.py", 2000),
+        ("scripts/build_demo_docs.py", 2000),
+        ("scripts/build_presentation.py", 2000),
+        ("docs/Tool_Execution_and_Demo_Manual.md", 3000),
+        ("docs/Presentation_Speaking_Script.docx", 20000),
+        ("docs/Tool_Execution_and_Demo_Manual.docx", 20000),
+        ("docs/SUNBURST_Forensic_Investigation_Group10.pptx", 30000),
     ])
     def test_deliverable_file_integrity(self, rel_path, min_bytes):
         file_path = PROJECT_ROOT / rel_path
         assert file_path.exists(), f"Required deliverable missing: {rel_path}"
         file_size = file_path.stat().st_size
         assert file_size >= min_bytes, f"Deliverable {rel_path} too small ({file_size} < {min_bytes} bytes)"
+
+    def test_presentation_deck_integrity(self):
+        import pptx
+        deck_path = PROJECT_ROOT / "docs" / "SUNBURST_Forensic_Investigation_Group10.pptx"
+        assert deck_path.exists(), "SUNBURST PPTX deck must exist"
+        prs = pptx.Presentation(str(deck_path))
+        assert len(prs.slides) == 12, f"Presentation must contain exactly 12 slides, found {len(prs.slides)}"

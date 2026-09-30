@@ -1,192 +1,180 @@
-# CAPSTONE PRESENTATION SCRIPT (10 MINUTES WORD-FOR-WORD)
-### Project: SUNBURST Supply Chain Malware Forensics & Statutory Compliance Audit
-**Academic Session:** 2026–2027 | TY B.Tech Computer Engineering  
-**Course:** Digital Forensics & Cyber Security Laboratory (Capstone Evaluation - 20 Marks)  
-**Institution:** KJ Somaiya School of Engineering, Somaiya Vidyavihar University, Mumbai  
-**Group Number:** 10  
-**Interactive Simulation Model:** [`docs/sunburst_simulation.html`](sunburst_simulation.html)
+# OPERATION SUNBURST DFIR: SYNCHRONIZED PRESENTATION SCRIPT
+### 10-Minute End-to-End Spoken Dialogue Synchronized with Slides & Live Demo
+**Course:** Digital Forensics & Cyber Security Laboratory (Capstone Evaluation — 20 Marks)  
+**Institution:** Department of Computer Engineering, K.J. Somaiya School of Engineering  
+**University:** Somaiya Vidyavihar University, Mumbai, Maharashtra  
+**Academic Year:** 2026–2027 | Class: TY B.Tech COMP | **Group 10**  
+**Accompanying Word Document:** [`docs/Presentation_Speaking_Script.docx`](Presentation_Speaking_Script.docx)  
+**Accompanying PowerPoint Presentation:** [`docs/SUNBURST_Forensic_Investigation_Group10.pptx`](SUNBURST_Forensic_Investigation_Group10.pptx)
 
 ---
 
-## PRESENTATION STRUCTURE & TIMELINE ALLOCATION
+## 1. INVESTIGATION ROSTER & DIVISION OF RESPONSIBILITY
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| Speaker         | Roll No     | Segment Focus                                         | Allocated Time  |
-+---------------------------------------------------------------------------------------------------------+
-| Amandeep Singh  | 16010123036 | Part 1: Attack Vector, Evidence Custody & DiE Triage  | 00:00 – 03:20   |
-| Omik Acharya    | 16010123218 | Part 2: FLOSS Deobfuscation & CAPA Behavioral Mapping | 03:20 – 06:40   |
-| Om Lanke        | 16010123216 | Part 3: Indian Law, Section 63 BSA 2023 & Remediation | 06:40 – 10:00   |
-+---------------------------------------------------------------------------------------------------------+
-```
+| Student Name | Roll Number | Assigned Forensic Role | Presentation Focus & Slide Coverage | Speaking Time |
+| :--- | :--- | :--- | :--- | :--- |
+| **Amandeep Singh** | **16010123036** | **Lead Forensic Investigator** | PE Header Triage, Supply Chain Infiltration & Cryptographic Verification (**Slides 1–4**) | 0:00 – 3:00 (3.0 min) |
+| **Omik Acharya** | **16010123218** | **Reverse Engineer** | Attack Timeline, String Deobfuscation (Deflate), FNV-1a Hashing & CAPA (**Slides 5–8**) | 3:00 – 6:00 (3.0 min) |
+| **Om Lanke** | **16010123216** | **Technical & Cyber Legal Auditor** | Statutory Indian Cyber Law, Section 63 BSA 2023, CI/CD Pipeline & Q&A (**Slides 9–12**) | 6:00 – 10:00 (4.0 min) |
 
 ---
 
-## PART 1: AMANDEEP SINGH (00:00 – 03:20)
-**Role:** Lead Investigator (PE Architecture & DiE Triage)  
-**Slides:** Slide 1 (Title), Slide 2 (Attack Overview & Chronology), Slide 3 (Evidence Acquisition & Hashing), Slide 4 (DiE Inspection & Entropy)
+## 2. PART 1: AMANDEEP SINGH (0:00 – 3:00 | SLIDES 1 TO 4)
+**Role:** Lead Forensic Investigator  
+**Specialization:** PE Architecture, Supply Chain Compromise & Cryptographic Verification
+
+### Slide & Screen Choreography:
+1. **Slide 1 (Title Slide):** Introduce Somaiya Group 10, presentation paradigm, and investigation scope.
+2. **Slide 2 (The Supply Chain Vector):** Switch side-by-side display to Browser $\rightarrow$ `docs/sunburst_simulation.html` (Stage 1: The Attack).
+3. **Slide 3 (ISO/IEC 27037 Evidence Ingestion):** Switch side-by-side display to Terminal $\rightarrow$ Run `bash scripts/verify_hashes.sh`.
+4. **Slide 4 (Static PE Architecture & Shannon Entropy):** In browser, click **Stage 4: Detect It Easy** to show beam scan and entropy curve.
+5. **Slide 5 (Attack Execution Timeline):** Summarize 8 stages and hand over to Omik Acharya.
+
+### Spoken Dialogue (Word-for-Word):
+> “Respected professors, external evaluators, and colleagues. Good morning. We are Group 10 from the Department of Computer Engineering at K.J. Somaiya School of Engineering, Somaiya Vidyavihar University. Welcome to our Capstone Forensic Investigation on Operation SUNBURST: The SolarWinds Supply Chain Attack.
+>
+> *(PPT: Slide 1 — Title Slide)*  
+> I am Amandeep Singh, Roll Number 16010123036, serving as the Lead Forensic Investigator. With me are my co-investigators: Omik Acharya (Roll 16010123218), who led our Reverse Engineering and Deobfuscation efforts, and Om Lanke (Roll 16010123216), who conducted our Technical Audit, Indian Statutory Compliance, and CI/CD Verification.
+>
+> Our presentation operates on a dual-synchronization model: our slides cover the threat architecture and case study findings, while our side-by-side screen demonstrates the actual forensic tools, terminal scripts, and interactive simulation in real time.
+>
+> *(PPT: Advance to Slide 2 — The Supply Chain Vector | Side-by-Side: Browser Stage 1)*  
+> Operation SUNBURST represents the watershed supply chain intrusion of the modern cyber era. Attributed by CISA to APT29 (Nobelium), the attackers did not breach customer perimeter defenses directly. Instead, they compromised the internal MSBuild software development pipeline of SolarWinds. By deploying an in-memory injection tool named SUNSPOT, they dynamically modified the source code of the core monitoring component: `SolarWinds.Orion.Core.BusinessLayer.dll`.
+>
+> Crucially, because this tampering occurred during compilation, the resulting trojanized DLL received a legitimate Authenticode digital signature from DigiCert. SolarWinds signed the binary, packaged it into official Orion software updates v2019.4 through v2020.2.1, and distributed it downstream to over 18,000 public and private organizations worldwide, including the U.S. Treasury, Department of Homeland Security, and critical infrastructure providers.
+>
+> *(PPT: Advance to Slide 3 — ISO/IEC 27037 Evidence Ingestion | Side-by-Side: Terminal — bash scripts/verify_hashes.sh)*  
+> In digital forensics, maintaining evidence integrity is sacred. Under ISO/IEC 27037:2012 guidelines, evidence must be verifiable, repeatable, and non-destructive. As you can see live on our terminal, we execute our verification script: `bash scripts/verify_hashes.sh`.
+>
+> The script verifies both our primary malware sample ending in `...7cf0d25` and our benchmark sample ending in `...17226d7e`. The terminal outputs an immediate green `[PASS]`. This proves bit-for-bit mathematical equality with the official CISA and FireEye forensic manifests, guaranteeing zero bitwise tampering before any analysis took place.
+>
+> *(PPT: Advance to Slide 4 — Static PE Architecture & Shannon Entropy | Side-by-Side: Browser Stage 4)*  
+> Next, we conducted static PE header triage using Detect It Easy (DiE v3.10). Observe the live visualizer on screen:
+> 1. Architecture: The malware is a 32-bit PE dynamic link library for Intel 80386 running under the Microsoft .NET CLR v4.0.30319, compiled with Roslyn C# in Visual Studio 2019.
+> 2. Section Entropy: Notice our Shannon entropy curve across the sections: the code section (`.text`) measures 6.21, embedded resources (`.rsrc`) measure 7.14, and relocation (`.reloc`) measures 0.11. The overall entropy is 5.9.
+> This is an extraordinary finding. Normal packed malware exhibits entropy exceeding 7.5. The attackers deliberately refrained from using UPX or commercial packers so that standard antivirus heuristic engines would evaluate the file as completely benign.
+> 3. Authenticode Signature: DiE confirms a valid digital signature issued to SolarWinds Worldwide, LLC by DigiCert. This is classic Subversion of Trust Controls (MITRE ATT&CK T1553.002).
+>
+> *(PPT: Advance to Slide 5 — Attack Execution Timeline)*  
+> On Slide 5, we reconstruct the complete 8-stage execution lifecycle of the backdoor. I now hand over to our Reverse Engineer, Omik Acharya, to dissect how we deobfuscated their encrypted strings and anti-analysis mechanisms.”
 
 ---
 
-### [00:00 – 00:45] Introduction & Case Study Significance
-*(Speaker Cue: Stand upright, clear confident tone, click to Slide 1)*
+## 3. PART 2: OMIK ACHARYA (3:00 – 6:00 | SLIDES 5 TO 8)
+**Role:** Reverse Engineer  
+**Specialization:** String Deobfuscation (Deflate), 64-Bit FNV-1a Hashing & CAPA Attribution
 
-"Respected evaluators, faculty members, and fellow engineers. Good morning. 
+### Slide & Screen Choreography:
+1. **Slide 5 (8-Stage Attack Lifecycle):** Walk through the state machine from service launch to C2 command channel.
+2. **Slide 6 (String Encryption & FLOSS):** Terminal `floss --version` $\rightarrow$ Browser Stage 5 $\rightarrow$ Click **"Decode all"** button live.
+3. **Slide 7 (Anti-Analysis FNV-1a Hashing + XOR):** In browser Stage 6, click **"wireshark"** $\rightarrow$ **"Run the check"**. Then in Terminal: `python3 scripts/run_forensics.py --check-process wireshark`.
+4. **Slide 8 (Capability Mapping & CAPA):** In Terminal, run `capa --version` and `python3 scripts/run_forensics.py --simulate --simulate-behavior victim`.
 
-On behalf of Group 10 from the Department of Computer Engineering, KJ Somaiya School of Engineering, Somaiya Vidyavihar University, I, Amandeep Singh, along with my colleagues Omik Acharya and Om Lanke, welcome you to our capstone digital forensics defense titled: **'Forensic Dissection of the SUNBURST Supply Chain Intrusion: Static Triage, Reverse Engineering, and Indian Statutory Admissibility under BSA 2023.'**
-
-In cybersecurity, enterprise networks operate on a fundamental premise: *'Trust your digitally signed software updates.'* But in late 2020, state-sponsored adversary UNC2452—attributed to APT29 and Russia's SVR—subverted that very trust. Instead of breaching fortified perimeter firewalls, they compromised the automated build system of SolarWinds, injecting a backdoor directly into their core network management DLL. Over 18,000 global commercial and governmental organizations installed it voluntarily. Today, we demonstrate an end-to-end static forensic autopsy of that exact trojanized library without running a single line of it."
-
----
-
-### [00:45 – 01:40] Attack Vector, 15-Month Chronology & Evidence Custody
-*(Speaker Cue: Transition to Slide 2 and Slide 3)*
-
-"Please look at Slide 2. Unlike runtime memory injection, SUNBURST was a pure **Software Supply Chain Compromise (MITRE ATT&CK T1195.002)**. 
-
-The attackers were inside SolarWinds for over fifteen months:
-- In September 2019, they gained access.
-- In October 2019, they added harmless test code to an Orion build to validate the build injection concept.
-- In February 2020, they injected SUNBURST into the build process using the memory-only SUNSPOT dropper.
-- Between March and June 2020, signed, trojanized updates shipped to 18,000 organizations.
-- Out of these 18,000, approximately 100 high-value organizations were hand-selected by the attackers for deep second-stage intrusion.
-
-Turning to Slide 3: Following **ISO/IEC 27037 standards** and **Section 105 of the Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023**, we acquired `SolarWinds.Orion.Core.BusinessLayer.dll` on an air-gapped workstation behind a Tableau hardware write-blocker. 
-
-We independently calculated the SHA-256 cryptographic digest:  
-`325c9b6ac0f441e66183572152a600b0f09916dd8e1b46c32d471502fd7a4d73` (with variant `32519b85c0b4...`).  
-When re-hashed post-investigation, all 64 hexadecimal characters matched identically. The evidence was preserved mathematically intact."
-
----
-
-### [01:40 – 03:20] PE Architecture & Detect It Easy (DiE) Triage
-*(Speaker Cue: Click to Slide 4, point to the entropy curve and Authenticode block)*
-
-"To triage the file without executing malicious code, we leveraged **Detect It Easy (DiE v3.10)**. 
-
-DiE reveals three crucial structural realities:
-1. **Target Architecture & Compiler:** The file is a PE32 dynamic link library for Intel 80386 running the `.NET Framework v4.0.30319` with `COMIMAGE_FLAGS_ILONLY`. It was compiled using the Microsoft Roslyn C# compiler.
-2. **Entropy Curve & Packer Absence:** Notice the entropy curve on Slide 4. It stays around **5.9 to 6.21** across the `.text` section, **7.14** in `.rsrc`, and **0.11** in `.reloc`. 
-   
-   Why didn't the attackers pack the DLL with UPX or Themida? Because packers push entropy above the **7.5 packed threshold**, instantly triggering automated heuristic alerts in corporate security tools. By remaining unpacked, the file appeared completely benign.
-3. **Authenticode Integrity:** The security directory at RVA `0x0008B200` confirms a valid Authenticode signature issued to `SolarWinds Worldwide, LLC` by DigiCert. This is classic **Subversion of Trust Controls (T1553.002)**.
-
-With the structural envelope established, I now invite our Reverse Engineer, Omik Acharya, to dissect the deobfuscation algorithms and behavioral logic."
-
----
-
-## PART 2: OMIK ACHARYA (03:20 – 06:40)
-**Role:** Reverse Engineer (FLOSS Deobfuscation & CAPA Attribution)  
-**Slides:** Slide 5 (FLOSS Deobfuscation & Deflate Decompression), Slide 6 (FNV-1a Hashed Blacklist), Slide 7 (CAPA & Behavioral Decision Flow)
+### Spoken Dialogue (Word-for-Word):
+> “Thank you, Amandeep. Respected evaluators, I am Omik Acharya, Roll Number 16010123218, serving as Reverse Engineer for Group 10.
+>
+> *(PPT: Slide 5 — 8-Stage Lifecycle Overview)*  
+> As outlined on Slide 5, SUNBURST's internal logic operates as an 8-stage state machine: initiating upon service startup, entering a 14-day dormancy timer, executing defensive process checks, hashing the victim host, generating domain names, tunneling covert DNS queries, dropping second-stage loaders, and establishing persistent interactive C2.
+>
+> *(PPT: Advance to Slide 6 — String Encryption | Side-by-Side: Terminal 'floss --version' -> Browser Stage 5)*  
+> To investigate this logic, we applied Mandiant FLOSS (v3.1.1). As verified in our terminal, FLOSS is installed natively. Standard forensic string utilities failed completely because the malware authors encrypted every critical string using a two-stage mechanism: Base64 encoding followed by raw Deflate decompression (`wbits = -15`, which strips the standard zlib header).
+>
+> *(Side-by-Side: Click 'Decode all' button in Browser Stage 5)*  
+> Watch our browser simulation decode these tokens live in real time:
+> • The ciphertext `SywrLstNzskvTdFLzs8FAA==` immediately inflates to `avsvmcloud.com` — the primary command-and-control apex domain.  
+> • The token `C/Z3Cwl3DHKN8c1ML...` inflates to `SOFTWARE\Microsoft\Cryptography`, the registry hive queried to read the victim's MachineGuid.  
+> • The token `801MzsjMS3UvzUwBAA==` yields `MachineGuid`, confirming host fingerprinting.  
+> • The token `SyzI1CvOz0ksKs/MSynWS87PBQA=` reveals `api.solarwinds.com` — a benign canary used to verify active internet connectivity.
+>
+> *(PPT: Advance to Slide 7 — Anti-Analysis & Defense Evasion | Side-by-Side: Browser Stage 6)*  
+> On Slide 7, we address how SUNBURST evaded detection by security analysts. If the binary had contained plaintext strings like 'wireshark', 'procmon', or 'x64dbg', endpoint detection and response (EDR) rules would have flagged it immediately. Instead, the authors engineered a mathematical evasion routine:
+> First, convert the running process name to lowercase.  
+> Second, compute its 64-bit Fowler-Noll-Vo 1a (FNV-1a) hash using offset basis `0xcbf29ce484222325` and prime `0x100000001b3`.  
+> Third, XOR the resulting 64-bit digest with the hardcoded magic constant: `0x5BAC903BA7D81967`.
+>
+> *(Side-by-Side: In Browser Stage 6, click 'wireshark' -> 'Run the check' | Switch to Terminal)*  
+> In our simulation and terminal, we run: `python3 scripts/run_forensics.py --check-process wireshark`.  
+> The terminal computes the hash `0xa84ff6500970f54d`, XORs it, and produces the exact decimal value `17574002783607647274`, confirming a direct hit against the malware's hardcoded blocklist of over 120 security utilities. If any of these tools are running, SUNBURST permanently self-terminates.
+>
+> *(PPT: Advance to Slide 8 — Capability Mapping | Side-by-Side: Terminal — capa --version && python3 scripts/run_forensics.py --simulate)*  
+> Finally, we analyzed the binary using Mandiant CAPA (v9.4.0) to map capabilities directly to the MITRE ATT&CK framework:
+> • **T1497.003 (Time-Based Sandbox Evasion):** A hardcoded `Thread.Sleep` interval of 288 to 336 hours (12 to 14 days) to outlast automated sandboxes.  
+> • **T1071.004 (DNS C2 Tunneling):** Covert DNS query encoding transmitting host telemetry within subdomains of `avsvmcloud.com`.  
+> • **T1562.001 (Impair Defenses):** Automated enumeration and suppression of security processes.  
+> • **T1082 (System Information Discovery):** Querying network configurations and system GUIDs.
+>
+> I now pass the floor to Om Lanke, our Technical & Cyber Legal Auditor, to present our statutory compliance under Indian law and automated CI/CD pipeline.”
 
 ---
 
-### [03:20 – 04:30] Static String Deobfuscation (FLOSS & Raw Deflate)
-*(Speaker Cue: Step forward, display Slide 5, technical authoritative tone)*
+## 4. PART 3: OM LANKE (6:00 – 10:00 | SLIDES 9 TO 12)
+**Role:** Technical & Cyber Legal Auditor  
+**Specialization:** IT Act 2000, CERT-In Directions 2022, Section 63 BSA 2023 & Pytest CI Automation
 
-"Thank you, Amandeep. Good morning everyone. I am Omik Acharya. My focus was reverse engineering the internal evasion routines, cryptographic ciphers, and command channels of SUNBURST.
+### Slide & Screen Choreography:
+1. **Slide 9 (Indian Statutory Cyber Law Framework):** In browser, show Stage 10 ('Indian law mapping') and click through statutory finding buttons.
+2. **Slide 10 (Legal Admissibility & Section 63 BSA 2023):** Switch to Terminal $\rightarrow$ Run `python3 scripts/generate_bsa_cert.py --format both`. Switch to VS Code $\rightarrow$ Display `legal_compliance/Section_63_BSA_Certificate.md`.
+3. **Slide 11 (CI/CD Automation & Verification):** Switch to Terminal $\rightarrow$ Run `pytest tests/ -v`. Show all 22 test assertions passing.
+4. **Slide 12 (Conclusion & Findings Matrix):** In browser, click Stage 11 ('Conclusion') showing 6 green checkmarks, summarize key findings, and open floor for Q&A.
 
-When we ran **Mandiant FLOSS (v3.1.1)**, it warned:  
-`WARNING: .NET string deobfuscation is not supported; extracting static strings only.`  
-Yet, FLOSS extracted **2,146 static strings**, immediately flagging suspicious classes: `OrionImprovementBusinessLayer`, `ZipHelper`, `Unzip`, and `DeflateStream`.
-
-SUNBURST hid its core configuration strings using a two-tier scheme: **raw Deflate compression** followed by **Base64 encoding**. We built an automated decoder into our pipeline. As shown on Slide 5:
-- `SywrLstNzskvTdFLzs8FAA==` decompresses to the C2 apex: **`avsvmcloud.com`**
-- `C/Z3Cwl3...` decompresses to: **`SOFTWARE\Microsoft\Cryptography`**
-- `801MzsjMS3UvzUwBAA==` decompresses to: **`MachineGuid`**, used to fingerprint victims
-- `C07NSU0...` decompresses to the WMI query: **`Select * From Win32_NetworkAdapterConfiguration where IPEnabled=true`**
-- `SyzI1Cv...` decompresses to the connectivity canary: **`api.solarwinds.com`**"
-
----
-
-### [04:30 – 05:40] The Hidden Blacklist: FNV-1a 64-Bit + XOR Key
-*(Speaker Cue: Click to Slide 6, walk through the interactive calculation)*
-
-"Now look at Slide 6: How did SUNBURST avoid detection by analysis tools without giving away what it was looking for?
-
-If malware contains strings like `wireshark.exe` or `x64dbg.exe`, standard antivirus scanners flag it immediately. SUNBURST solved this mathematically. It took running process names, converted them to lowercase, calculated their **64-bit FNV-1a hash**, and XORed the digest with the constant **`0x5BAC903BA7D81967`**.
-
-Let us trace the exact pipeline:
-1. Process name: `Wireshark`
-2. Normalized lowercase: `wireshark`
-3. 64-bit FNV-1a hash: `0xa84ff6500970f54d`
-4. XOR with `0x5BAC903BA7D81967`: **`17574002783607647274`**
-
-It compared this result against its hardcoded table of 120+ hashes. Recovered targets include `procmon`, `procexp`, `fiddler`, `x64dbg`, `ida64`, `dnspy`, `autoruns`, `tcpview`, and `sysmon`. If any matched, the backdoor went completely silent."
-
----
-
-### [05:40 – 06:40] CAPA Behavioral Mapping & The 8-Step Decision Gate
-*(Speaker Cue: Click to Slide 7, highlight decision stages)*
-
-"On Slide 7, **Mandiant CAPA v7.0.1** mapped the backdoor's capabilities to the MITRE ATT&CK Matrix:
-- **T1497.003 (Time-Based Evasion):** CAPA detected `delay execution`—a hardcoded `Thread.Sleep` delay of 288 hours, or **12 to 14 days**, designed to outlast automated dynamic sandboxes that terminate after 5 to 10 minutes.
-- **T1071.004 (DNS C2 Tunneling):** CAPA detected `resolve DNS`. The malware transmitted encoded victim telemetry via subdomains of `avsvmcloud.com`.
-- **T1562.001 (Impair Defenses):** Hashing processes and terminating active logging.
-
-By correlating our findings, we reconstructed the **8-Step Environmental Decision Chain**:
-- On an **Analyst VM with Wireshark**, the backdoor terminates at **Step 4** (Security tool detected).
-- On an **Isolated Test Machine**, it terminates at **Step 5** (Internet check fails).
-- On a **Fresh Installation**, it waits at **Step 2** (Dormancy period).
-- Only on a **real, domain-joined enterprise server** does it proceed through all 8 steps to open the HTTP command channel.
-
-I now invite Om Lanke to analyze the legal violations under Indian cyber law and present our Section 63 BSA 2023 certification."
-
----
-
-## PART 3: OM LANKE (06:40 – 10:00)
-**Role:** Cyber Legal Auditor & Compliance Lead (IT Act, CERT-In, BSA 2023, DPDP 2023, BNSS 2023)  
-**Slides:** Slide 8 (Indian Statutory Mapping), Slide 9 (Section 63 BSA 2023 & BNSS 2023), Slide 10 (Remediation & 6 Inquiries)
+### Spoken Dialogue (Word-for-Word):
+> “Thank you, Omik. Respected evaluators, I am Om Lanke, Roll Number 16010123216, serving as the Technical & Cyber Legal Auditor for Group 10.
+>
+> *(PPT: Slide 9 — Indian Statutory Cyber Law Framework | Side-by-Side: Browser Stage 10)*  
+> A forensic investigation cannot conclude at technical disassembly; it must establish culpability and admissibility under statutory law. On Slide 9 and in our browser simulation, we map SUNBURST's technical behaviors directly to Indian cyber jurisprudence:
+> 1. **Information Technology Act, 2000:**  
+>    • **Section 43 & 66:** Unauthorized access, data extraction (`MachineGuid`), and introducing computer contaminants (penalties include civil damages and up to 3 years imprisonment).  
+>    • **Section 66F (Cyber Terrorism):** SUNBURST targeted government ministries and critical communications infrastructure. Introducing malicious code with intent to threaten national sovereignty or critical infrastructure carries a mandatory sentence of Imprisonment for Life.  
+>    • **Section 70:** Unauthorized access to declared Protected Systems (up to 10 years imprisonment).  
+>    • **Section 43A:** Entities deploying unverified third-party vendor updates without adequate due diligence face uncapped civil compensation for negligence.  
+> 2. **CERT-In Directions (28 April 2022):**  
+>    • **Mandatory 6-Hour Reporting Window:** Under Annexure I Category 2, organizations must notify CERT-In within 6 hours of identifying a supply chain intrusion. We have drafted an official incident notification template in `legal_compliance/CERT_In_Incident_Notification_Template.md`.  
+>    • **180-Day Log Retention:** Direction 20(3) mandates ICT service providers maintain system and network logs for 180 days within Indian jurisdiction.  
+> 3. **Digital Personal Data Protection (DPDP) Act, 2023:** Section 8(5) & 8(6) mandate formal breach notification to the Data Protection Board of India.
+>
+> *(PPT: Advance to Slide 10 — Legal Admissibility & Section 63 BSA 2023 | Side-by-Side: Terminal — python3 scripts/generate_bsa_cert.py --format both)*  
+> Now, how is digital evidence legally admitted before an Indian court? With the enactment of the Bharatiya Sakshya Adhiniyam, 2023, the Indian Evidence Act, 1872 was repealed. The traditional Section 65B certificate is now legally obsolete.
+>
+> Under Section 63 of the BSA 2023, admissibility of electronic records requires a rigorous two-part statutory certificate:
+> *(Side-by-Side: Open legal_compliance/Section_63_BSA_Certificate.md in VS Code)*  
+> As generated live by our script, observe the certificate structure:
+> • **Part A (Custodian Affirmation):** Executed by Amandeep Singh, certifying workstation MAC address, hardware write-blocking, and lawful custody under ISO/IEC 27037.  
+> • **Part B (Forensic Expert Affirmation):** Executed jointly by Omik Acharya and myself, affirming cryptographic hash equality under NIST FIPS 180-4 and the scientific validity of our toolchain.  
+> Notice that our script dynamically binds the certificate to the physical hardware by embedding the machine MAC address, kernel release, and NTP timestamp. This satisfies Section 105 of the Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023, rendering our forensic evidence fully admissible as substantive primary evidence.
+>
+> *(PPT: Advance to Slide 11 — CI/CD Automation & Verification | Side-by-Side: Terminal — pytest tests/ -v)*  
+> To guarantee that our findings are mathematically reproducible across any forensic workstation, we constructed an automated CI/CD pipeline using Astral `uv` and GitHub Actions. Look at our terminal as we run: `pytest tests/ -v`.  
+> In just 0.20 seconds, all 22 unit test assertions execute and pass green across 6 test suites: cryptographic integrity, raw Deflate inflation, FNV-1a 64-bit hashing math, CAPA capability parsing, telemetry extraction, and legal certificate generation.
+>
+> *(PPT: Advance to Slide 12 — Conclusion & Findings Matrix | Side-by-Side: Browser Stage 11)*  
+> In conclusion, on Slide 12 and in Stage 11 of our simulation, Group 10 has definitively resolved all six core capstone questions:
+> 1. **Authenticity:** Legitimate DLL trojanized in the build pipeline with valid DigiCert signature.  
+> 2. **Strings:** 100% decrypted via Base64 and raw Deflate (`wbits=-15`).  
+> 3. **Anti-Analysis:** 120+ tools checked via 64-bit FNV-1a hashing + XOR mask, maintaining benign entropy (5.9).  
+> 4. **Network C2:** Covert DNS DGA tunneling via `avsvmcloud.com`.  
+> 5. **Indian Law:** Fully actionable under IT Act Sec 66F, CERT-In 6-hour directive, and certified under BSA 2023 Section 63.  
+> 6. **Verification:** 100% automated regression test coverage via CI/CD.
+>
+> We thank our professors and evaluators for their time and guidance. Group 10 is now open for your questions.”
 
 ---
 
-### [06:40 – 07:50] Statutory Violations Under Indian Cyber Jurisprudence
-*(Speaker Cue: Confident legal authority tone, display Slide 8)*
+## 5. EVALUATOR Q&A CHEAT-SHEET (Top 6 Questions & Answers)
 
-"Thank you, Omik. Respected evaluators, digital forensics without statutory integration cannot sustain prosecution or enterprise governance. As the Cyber Legal Auditor, I mapped the SUNBURST intrusion across the Indian legal corpus.
+1. **Q: Why did you not execute the malware in a dynamic sandbox?**  
+   *A:* SUNBURST contains a hardcoded 12 to 14 day dormancy timer (MITRE ATT&CK T1497.003) and checks for sandbox hooks. A standard 5-minute dynamic detonation reveals zero network activity. Static analysis using DiE, FLOSS, and CAPA allowed us to reverse-engineer 100% of the malware's logic safely without risking host compromise or C2 leakage.
 
-Please direct your attention to Slide 8. The intrusion triggers four core provisions under the **Information Technology Act, 2000**:
-1. **Section 43(a), (b), and (c):** Unauthorized access, extraction of system identifiers, and introduction of malicious contaminants establish civil liability for damages.
-2. **Section 66:** Dishonest and fraudulent hacking attracts criminal prosecution punishable by up to 3 years imprisonment.
-3. **Section 66F (Cyber Terrorism):** SUNBURST compromised government infrastructure, defense suppliers, and energy backbones. Under Section 66F(1)(B), introducing malicious code with intent to threaten the sovereignty or integrity of India carries a mandatory sentence of **Imprisonment for Life**.
-4. **Section 70 & NCIIPC:** Unauthorized tampering with designated Critical Information Infrastructure triggers up to 10 years imprisonment.
+2. **Q: What is the exact difference between Section 65B of IEA 1872 and Section 63 of BSA 2023?**  
+   *A:* BSA 2023 repealed IEA 1872. Section 63 BSA modernizes electronic evidence admissibility, explicitly recognizing virtualized systems and cloud infrastructure. It mandates a dual-certificate structure: Part A by the Custodian proving lawful management, and Part B by the Technical Expert certifying cryptographic hash integrity.
 
-Furthermore, corporate entities that deployed unverified vendor updates violated **Section 43A and the 2011 Reasonable Security Practices Rules**, creating liability for corporate negligence.
+3. **Q: Why did the attackers XOR the FNV-1a hash with 0x5BAC903BA7D81967?**  
+   *A:* Plain FNV-1a hashes of common process names can be reversed using rainbow tables. XORing the 64-bit digest with a secret hardcoded constant added a secondary obfuscation layer, preventing researchers from identifying which tools were targeted without disassembling the DLL.
 
-Under the **CERT-In Cyber Security Directions of 28 April 2022**, mandated by Section 70B:
-- Organizations must formally notify CERT-In **within 6 hours** of detecting supply chain compromises.
-- Organizations must retain system and traffic logs within Indian jurisdiction for **180 days** (Direction 5(v)).
-- And under the **Digital Personal Data Protection (DPDP) Act, 2023**, mandatory breach notices must be issued to the Data Protection Board of India."
+4. **Q: How did the malware achieve persistence without setting normal Windows Run registry keys?**  
+   *A:* SUNBURST achieved persistence via DLL component hijacking (T1574.002). Embedded inside the core SolarWinds Orion DLL, it executed automatically every time the legitimate Windows service `SolarWinds.BusinessLayerHost.exe` started, avoiding suspicious registry Run keys.
 
----
+5. **Q: What are the mandatory reporting deadlines under CERT-In Directions 2022?**  
+   *A:* Under Direction 5(i) of the 28 April 2022 Directions, any supply chain or critical system compromise must be reported to CERT-In within 6 hours of detection. Under Direction 20(3), all system and network logs must be maintained within Indian jurisdiction for 180 days.
 
-### [07:50 – 09:00] Admissibility of Electronic Records: Section 63 BSA 2023
-*(Speaker Cue: Click to Slide 9, emphasize the transition from 65B to Section 63)*
-
-"Moving to Slide 9: In Indian evidentiary law, the Indian Evidence Act, 1872 has been repealed by the **Bharatiya Sakshya Adhiniyam (BSA), 2023**. The old Section 65B is replaced by **Section 63 of the BSA, 2023**.
-
-Under Section 63(2), four statutory conditions must be established:
-1. Lawful, regular operational custody of the computing device.
-2. Regular, ordinary feeding of electronic records.
-3. Proper operational state without memory corruption or unauthorized alteration.
-4. Exact, unadulterated reproduction of the stored data.
-
-To satisfy Section 63(4) of the BSA 2023 and Section 105 of the **Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023**, our team developed `generate_bsa_cert.py`, producing a dual-signatory certificate:
-- **Part A (Custodian Affirmation):** Executed by Amandeep Singh, affirming physical control, workstation telemetry, and write-block integrity.
-- **Part B (Forensic Expert Technical Certificate):** Executed jointly by Omik Acharya and myself, verifying cryptographic hash matching (NIST FIPS 180-4), deterministic tool outputs, and complete absence of data distortion.
-
-This certificate renders our findings admissible as primary evidence in an Indian court of law."
-
----
-
-### [09:00 – 10:00] Enterprise Defense Architecture & Concluding Takeaways
-*(Speaker Cue: Click to Slide 10, energetic closing delivery)*
-
-"Finally, on Slide 10, we answer the **Six Core Forensic Inquiries** and propose our **Three-Tiered Supply Chain Defense Architecture**:
-1. **Tier 1 (SLSA Level 4 Build Security):** Mandate hermetic build environments and In-toto cryptographic attestations to ensure that compiled binaries match committed source code.
-2. **Tier 2 (Hardware Security Modules):** Code signing keys must reside in FIPS 140-2 Level 3 HSMs with two-person quorum verification before signing release builds.
-3. **Tier 3 (Zero Trust Protective DNS):** Network Management Systems must never have open outbound internet access. Implement DNS Response Policy Zones to block newly observed domains and terminate DNS tunneling.
-
-To conclude: Group 10 has demonstrated that while SUNBURST weaponized trust, rigorous static forensics combined with Section 63 of the BSA 2023 provides the investigative foundation to detect, attribute, and legally prosecute advanced cyber adversaries.
-
-Thank you. We also invite you to explore our interactive simulation model in [`docs/sunburst_simulation.html`](sunburst_simulation.html). We are now open for your questions."
+6. **Q: How does the BSA 2023 Certificate bind evidence to the physical workstation?**  
+   *A:* Our automated generator (`scripts/generate_bsa_cert.py`) queries the local network interface for its physical MAC address, reads the host kernel release, captures CPU architecture, and queries the system NTP clock. This physical telemetry is permanently written into the affidavit alongside the SHA-256 digests.
