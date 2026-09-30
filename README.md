@@ -2,7 +2,7 @@
 ### Group 10 | Digital Forensics & Cyber Security Laboratory (Capstone Activity - 20 Marks)
 **Department of Computer Engineering, KJ Somaiya School of Engineering**  
 **Somaiya Vidyavihar University, Mumbai, Maharashtra, India**  
-**Academic Year:** 2026–2027 | Semester VI | Class: TY B.Tech Computer Engineering  
+**Academic Year:** 2026–2027 | Semester VII | Class: LY B.Tech Computer Engineering  
 
 ---
 
