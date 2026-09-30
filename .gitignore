@@ -86,3 +86,5 @@ cover/
 *.pcap
 *.pcapng
 scratch/
+~$*
+docs/~\
