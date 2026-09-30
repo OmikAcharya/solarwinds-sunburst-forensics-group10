@@ -13,7 +13,6 @@
 [![Admissibility: Section 63 BSA 2023](https://img.shields.io/badge/Admissibility-Section_63_BSA_2023-darkgreen.svg)](legal_compliance/Section_63_BSA_Certificate.md)
 [![Compliance: CERT-In Directions 2022](https://img.shields.io/badge/CERT--In-6--Hour_Disclosure-orange.svg)](legal_compliance/CERT_In_Incident_Notification_Template.md)
 [![MITRE ATT&CK](https://img.shields.io/badge/MITRE_ATT%26CK-v14_Enterprise-red.svg)](https://attack.mitre.org/software/S0559/)
-
 ---
 
 ## 1. INVESTIGATION TEAM ROSTER & ROLE SPLITS
@@ -187,7 +186,7 @@ SUNBURST avoided storing plaintext security process strings by hashing them with
 ├── docs/
 │   ├── Investigation_Report.md              # Exhaustive 8-section formal DFIR investigation report
 │   ├── Presentation_Script.md               # 10-minute word-for-word presentation script (3:20 per member)
-│   ├── Presentation_Slides_Outline.md       # Institutional 10-slide outline for capstone defense
+│   ├── Presentation_Slides_Outline.md       # Institutional 12-slide presentation outline and defense guide
 │   └── sunburst_simulation.html             # Interactive HTML5 animated forensic simulation model
 └── tests/
     └── test_forensic_pipeline.py            # Pytest test suite (22 comprehensive test assertions)
@@ -237,7 +236,7 @@ Open `docs/sunburst_simulation.html` directly in any web browser (Google Chrome,
 
 ## 8. ACADEMIC & INSTITUTIONAL DISCLAIMER
 
-This digital forensics capstone project is developed exclusively for academic research, education, and forensic evaluation under the curriculum of the **Department of Computer Engineering, KJ Somaiya School of Engineering, Somaiya Vidyavihar University, Mumbai**. All analyses were performed on non-functional, static, or isolated artifacts in accordance with ethical standards, the Information Technology Act, 2000, and institutional research policies.
+This digital forensics investigation project is developed exclusively for academic research, education, and forensic evaluation under the curriculum of the **Department of Computer Engineering, KJ Somaiya School of Engineering, Somaiya Vidyavihar University, Mumbai**. All analyses were performed on non-functional, static, or isolated artifacts in accordance with ethical standards, the Information Technology Act, 2000, and institutional research policies.
 
 ```
 (c) 2026-2027 Group 10 | KJ Somaiya School of Engineering | Somaiya Vidyavihar University
