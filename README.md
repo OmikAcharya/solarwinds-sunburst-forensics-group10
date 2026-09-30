@@ -1,5 +1,5 @@
 # SolarWinds SUNBURST Malware Forensics & Statutory Compliance Audit
-### Group 10 | Digital Forensics & Cyber Security Laboratory (Capstone Activity - 20 Marks)
+### Group 10 | Digital Forensics & Cyber Security Laboratory (IA2)
 **Department of Computer Engineering, KJ Somaiya School of Engineering**  
 **Somaiya Vidyavihar University, Mumbai, Maharashtra, India**  
 **Academic Year:** 2026–2027 | Semester VII | Class: LY B.Tech Computer Engineering  
